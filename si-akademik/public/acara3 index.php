@@ -1,46 +1,40 @@
 <?php
-
-include "../config/database.php";
-
-$query = "SELECT * FROM mahasiswa ORDER BY nim ASC";
-$result = mysqli_query($conn, $query);
-
-$mahasiswa = [];
-
-while ($row = mysqli_fetch_assoc($result)) {
-    $mahasiswa[] = $row;
-}
-
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Daftar Mahasiswa</title>
+    <title>SI Akademik - Daftar Mahasiswa</title>
 
+    <!-- Bootstrap 5 CDN -->
     <link
         href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet">
+        rel="stylesheet"
+    >
 </head>
 
 <body>
 
-    <div class="container mt-4">
+<div class="container mt-5">
 
-        <h1 class="mb-4">Daftar Mahasiswa</h1>
+    <!-- Judul -->
+    <h1 class="mb-4">Daftar Mahasiswa</h1>
 
-        <a href="../create.php" class="btn btn-primary mb-3">
-            Tambah Mahasiswa
-        </a>
+    <!-- Tombol Tambah -->
+    <a href="#" class="btn btn-primary mb-3">
+        Tambah Mahasiswa
+    </a>
 
+    <!-- Tabel Mahasiswa -->
+    <div class="table-responsive">
         <table class="table table-bordered table-striped">
 
             <thead class="table-dark">
                 <tr>
+                    <th>No</th>
                     <th>NIM</th>
                     <th>Nama</th>
                     <th>Prodi</th>
@@ -50,53 +44,49 @@ while ($row = mysqli_fetch_assoc($result)) {
 
             <tbody>
 
-                <?php foreach ($mahasiswa as $mhs): ?>
+                <tr>
+                    <td>1</td>
+                    <td>240101001</td>
+                    <td>Farin Sevany</td>
+                    <td>Teknik Informatika</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm">
+                            Edit
+                        </button>
 
-                    <tr>
+                        <button class="btn btn-danger btn-sm">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>
 
-                        <td>
-                            <?= htmlspecialchars($mhs['nim']) ?>
-                        </td>
+                <tr>
+                    <td>2</td>
+                    <td>240101002</td>
+                    <td>Rendi Pranata</td>
+                    <td>Teknik Informatika</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm">
+                            Edit
+                        </button>
 
-                        <td>
-                            <?= htmlspecialchars($mhs['nama']) ?>
-                        </td>
-
-                        <td>
-                            <?= htmlspecialchars($mhs['prodi']) ?>
-                        </td>
-
-                        <td>
-
-                            <a
-                                href="../edit.php?nim=<?= urlencode($mhs['nim']) ?>"
-                                class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-
-                            <a
-                                href="../delete.php?nim=<?= urlencode($mhs['nim']) ?>"
-                                class="btn btn-danger btn-sm"
-                                onclick="return confirm('Yakin mau hapus data ini?')">
-                                Hapus
-                            </a>
-
-                        </td>
-
-                    </tr>
-
-                <?php endforeach; ?>
+                        <button class="btn btn-danger btn-sm">
+                            Hapus
+                        </button>
+                    </td>
+                </tr>
 
             </tbody>
 
         </table>
-
     </div>
 
-    <script
-        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-    </script>
+</div>
+
+<!-- Bootstrap JS -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
 
 </body>
-
 </html>
