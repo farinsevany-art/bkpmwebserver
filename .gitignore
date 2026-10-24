@@ -1,0 +1,16 @@
+
+# File konfigurasi sensitif
+.env
+.env.*
+
+# Dependency
+/vendor/
+/node_modules/
+
+# File log
+*.log
+/storage/logs/*
+
+# File sementara dan sistem operasi
+.DS_Store
+Thumbs.db
