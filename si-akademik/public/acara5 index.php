@@ -1,37 +1,45 @@
+
 <?php
 
 require_once __DIR__ . '/../routes/web.php';
 
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// Jika project berada di subfolder /si-akademik/public
-$base = '/si-akademik/public';
+$base = '/minngu1/si-akademik/public';
 
 if (str_starts_with($uri, $base)) {
-    $uri = substr($uri, strlen($base)) ?: '/';
+    $uri = substr($uri, strlen($base));
 }
+
+$uri = $uri === '' ? '/' : $uri;
+$uri = rtrim($uri, '/') ?: '/';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if (isset($routes[$method][$uri])) {
-
     [$controllerName, $action] = $routes[$method][$uri];
 
-    if ($controllerName === 'HomeController') {
-        require_once __DIR__ . '/../App/Controllers/HomeController.php';
+    $controllers = [
+        'HomeController' => __DIR__ . '/../app/Controllers/HomeController.php',
+        'MahasiswaController' => __DIR__ . '/../app/Controllers/MahasiswaController.php',
+    ];
+
+    if (!isset($controllers[$controllerName])) {
+        http_response_code(404);
+        exit('Controller tidak ditemukan.');
     }
 
-    if ($controllerName === 'MahasiswaController') {
-        require_once __DIR__ . '/../App/Controllers/MahasiswaController.php';
-    }
+    require_once $controllers[$controllerName];
 
     $controller = new $controllerName();
 
+    if (!is_callable([$controller, $action])) {
+        http_response_code(404);
+        exit('Method tidak ditemukan.');
+    }
+
     $controller->$action();
-
 } else {
-
     http_response_code(404);
-
-    echo "404 - Halaman tidak ditemukan";
+    echo '404 - Halaman tidak ditemukan';
 }

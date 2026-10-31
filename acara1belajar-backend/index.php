@@ -16,7 +16,7 @@
 
         <tr>
             <td>Nama</td>
-            <td>Farin Sevany Kasih </td>
+            <td>farin sevany kasih </td>
         </tr>
 
         <tr>

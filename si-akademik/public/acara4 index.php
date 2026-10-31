@@ -2,24 +2,20 @@
 
 require_once __DIR__ . '/../app/Models/Mahasiswa.php';
 
-$mahasiswa = [
-    new Mahasiswa(
-        '240101001',
-        'Farin Sevany',
-        'Teknik Informatika'
-    ),
+$mhs1 = new Mahasiswa(
+    "240101001",
+    "Farin Sevany",
+    "Teknik Informatika"
+);
 
-    new Mahasiswa(
-        '240101002',
-        'Rendi Pranata',
-        'Teknik Informatika'
-    ),
+$mhs2 = new Mahasiswa(
+    "240101002",
+    "Rendi Pranata",
+    "Teknik Informatika"
+);
 
-    new Mahasiswa(
-        '240101003',
-        'Ratu Alyvia Meydiandra',
-        'Teknik Informatika'
-    )
-];
+$daftarMahasiswa = [$mhs1, $mhs2];
 
-require_once __DIR__ . '/../app/Views/mahasiswa/index.php';
+$content = __DIR__ . '/../app/Views/mahasiswa/index.php';
+
+require __DIR__ . '/../app/Views/layouts/main.php';

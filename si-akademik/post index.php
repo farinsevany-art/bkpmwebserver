@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Acara 3 - POST</title>
+    <title>Acara 2 - POST</title>
 </head>
 <body>
 

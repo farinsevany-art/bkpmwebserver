@@ -27,4 +27,9 @@ class Mahasiswa
     {
         return $this->prodi;
     }
+
+    public function getAngkatan()
+    {
+        return '20' . substr($this->nim, 0, 2);
+    }
 }
