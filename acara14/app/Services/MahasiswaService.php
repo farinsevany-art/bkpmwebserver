@@ -123,38 +123,40 @@ class MahasiswaService
      */
     public function create(array $input): array
     {
-        $result = $this->validate($input);
-
-        if ($result['errors'] !== []) {
-            return [
-                'success' => false,
-                'data' => $result['data'],
-                'errors' => $result['errors'],
-            ];
-        }
-
         try {
+            $result = $this->validate($input);
+
+            if ($result['errors'] !== []) {
+                return [
+                    'success' => false,
+                    'data' => $result['data'],
+                    'errors' => $result['errors'],
+                ];
+            }
+
             $success = $this->mahasiswaRepository->create(
                 $result['data']
             );
-        } catch (PDOException $e) {
+
+            if (!$success) {
+                throw new RuntimeException('Operasi tambah mahasiswa tidak berhasil.');
+            }
+        } catch (Throwable $e) {
             AppLogger::error($e, 'MahasiswaService::create');
             return [
                 'success' => false,
-                'data' => $result['data'],
+                'data' => $this->normalize($input),
                 'errors' => [
                     'general' =>
-                        'Data mahasiswa gagal disimpan. Periksa kembali data yang dimasukkan.',
+                        'Data mahasiswa gagal disimpan. Silakan coba lagi.',
                 ],
             ];
         }
 
         return [
-            'success' => $success,
+            'success' => true,
             'data' => $result['data'],
-            'errors' => $success
-                ? []
-                : ['general' => 'Data mahasiswa gagal disimpan.'],
+            'errors' => [],
         ];
     }
 
@@ -163,48 +165,51 @@ class MahasiswaService
      */
     public function update(string $nimLama, array $input): array
     {
-        if (!$this->mahasiswaRepository->find($nimLama)) {
-            return [
-                'success' => false,
-                'data' => $this->normalize($input),
-                'errors' => [
-                    'general' => 'Data mahasiswa tidak ditemukan.',
-                ],
-            ];
-        }
-
-        $result = $this->validate($input, $nimLama);
-
-        if ($result['errors'] !== []) {
-            return [
-                'success' => false,
-                'data' => $result['data'],
-                'errors' => $result['errors'],
-            ];
-        }
-
         try {
+            if (!$this->mahasiswaRepository->find($nimLama)) {
+                return [
+                    'success' => false,
+                    'data' => $this->normalize($input),
+                    'errors' => [
+                        'general' => 'Data mahasiswa tidak ditemukan.',
+                    ],
+                ];
+            }
+
+            $result = $this->validate($input, $nimLama);
+
+            if ($result['errors'] !== []) {
+                return [
+                    'success' => false,
+                    'data' => $result['data'],
+                    'errors' => $result['errors'],
+                ];
+            }
+
             $success = $this->mahasiswaRepository->update(
                 $nimLama,
                 $result['data']
             );
-        } catch (PDOException $e) {
+
+            if (!$success) {
+                throw new RuntimeException('Operasi ubah mahasiswa tidak berhasil.');
+            }
+        } catch (Throwable $e) {
+            AppLogger::error($e, 'MahasiswaService::update');
             return [
                 'success' => false,
-                'data' => $result['data'],
+                'data' => $this->normalize($input),
                 'errors' => [
                     'general' =>
-                        'Data mahasiswa gagal diperbarui. Periksa kembali data yang dimasukkan.',
+                        'Data mahasiswa gagal diperbarui. Silakan coba lagi.',
                 ],
             ];
         }
 
         return [
-            'success' => $success,
+            'success' => true,
             'data' => $result['data'],
-            'errors' => $success
-                ? []
-                : ['general' => 'Data mahasiswa gagal diperbarui.'],
+            'errors' => [],
         ];
     }
 }

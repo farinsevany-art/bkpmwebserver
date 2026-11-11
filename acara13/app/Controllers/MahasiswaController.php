@@ -5,18 +5,18 @@ class MahasiswaController extends Controller
     private const PER_PAGE = 10;
 
     private MahasiswaRepository $mahasiswaRepository;
-    private Prodi $prodi;
+    private ProdiRepository $prodiRepository;
     private MahasiswaService $mahasiswaService;
 
     // Constructor Dependency Injection: dependensi dikirim dari factory.
-    public function __construct(MahasiswaRepository $mahasiswaRepository, Prodi $prodi)
-    {
+    public function __construct(
+        MahasiswaRepository $mahasiswaRepository,
+        ProdiRepository $prodiRepository,
+        MahasiswaService $mahasiswaService
+    ) {
         $this->mahasiswaRepository = $mahasiswaRepository;
-        $this->prodi = $prodi;
-        $this->mahasiswaService = new MahasiswaService(
-            $mahasiswaRepository,
-            $prodi
-        );
+        $this->prodiRepository = $prodiRepository;
+        $this->mahasiswaService = $mahasiswaService;
     }
 
     // Menampilkan daftar mahasiswa, pencarian, dan pagination
@@ -108,6 +108,7 @@ class MahasiswaController extends Controller
         $result = $this->mahasiswaService->create($_POST);
 
         if (!$result['success']) {
+            $this->flashSaveFailure($result['errors'], 'Data mahasiswa gagal disimpan.');
             $this->form('create', null, $result['data'], $result['errors']);
             return;
         }
@@ -144,16 +145,15 @@ class MahasiswaController extends Controller
             $this->redirect('mahasiswa');
         }
 
-        $row = $this->mahasiswaRepository->find($nim);
+        $result = $this->mahasiswaService->update($nim, $_POST);
 
-        if (!$row) {
+        if (!empty($result['not_found'])) {
             $this->notFound();
             return;
         }
 
-        $result = $this->mahasiswaService->update($nim, $_POST);
-
         if (!$result['success']) {
+            $this->flashSaveFailure($result['errors'], 'Data mahasiswa gagal diubah.');
             $this->form('edit', $nim, $result['data'], $result['errors']);
             return;
         }
@@ -205,8 +205,20 @@ class MahasiswaController extends Controller
             'id' => $nim,
             'old' => $old,
             'errors' => $errors,
-            'prodiList' => $this->prodi->options(),
+            'prodiList' => $this->prodiRepository->options(),
         ]);
+    }
+
+    private function flashSaveFailure(array $errors, string $failureMessage): void
+    {
+        if (($errors['nim'] ?? null) === 'NIM sudah terdaftar.') {
+            $this->flash('danger', 'NIM sudah terdaftar.');
+            return;
+        }
+
+        if (isset($errors['general'])) {
+            $this->flash('danger', $failureMessage);
+        }
     }
 
 }

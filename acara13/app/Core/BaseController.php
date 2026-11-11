@@ -75,9 +75,7 @@ class BaseController
         ];
     }
 
-    /**
-     * Mengambil pesan notifikasi dan menghapusnya dari session.
-     */
+    
     protected function getFlash(): ?array
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {

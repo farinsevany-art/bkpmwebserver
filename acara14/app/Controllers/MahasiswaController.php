@@ -105,7 +105,7 @@ class MahasiswaController extends Controller
 
         if (!$result['success']) {
             $_SESSION['_mahasiswa_form_state']['create'] = ['data' => $result['data'], 'errors' => $result['errors']];
-            $this->flash('danger', 'Data belum tersimpan. Periksa kembali isian formulir.');
+            $this->flashSaveFailure($result['errors'], 'Data mahasiswa gagal disimpan.');
             $this->redirect('mahasiswa/create');
         }
 
@@ -154,7 +154,7 @@ class MahasiswaController extends Controller
 
         if (!$result['success']) {
             $_SESSION['_mahasiswa_form_state']['edit'][$nim] = ['data' => $result['data'], 'errors' => $result['errors']];
-            $this->flash('danger', 'Data belum diperbarui. Periksa kembali isian formulir.');
+            $this->flashSaveFailure($result['errors'], 'Data mahasiswa gagal diubah.');
             $this->redirect('mahasiswa/' . rawurlencode($nim) . '/edit');
         }
 
@@ -214,6 +214,21 @@ class MahasiswaController extends Controller
             'errors' => $errors,
             'prodiList' => $this->prodi->options(),
         ]);
+    }
+
+    private function flashSaveFailure(array $errors, string $failureMessage): void
+    {
+        if (($errors['nim'] ?? null) === 'NIM sudah terdaftar.') {
+            $this->flash('danger', 'NIM sudah terdaftar.');
+            return;
+        }
+
+        if (isset($errors['general'])) {
+            $this->flash('danger', $failureMessage);
+            return;
+        }
+
+        $this->flash('danger', 'Periksa kembali data yang dimasukkan.');
     }
 
 }

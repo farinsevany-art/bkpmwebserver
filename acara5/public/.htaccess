@@ -1,7 +1,5 @@
 Options -MultiViews
 RewriteEngine On
-
-# Jika file atau folder memang ada, layani langsung oleh Apache.
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 

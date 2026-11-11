@@ -9,14 +9,14 @@
 class MahasiswaService
 {
     private MahasiswaRepository $mahasiswaRepository;
-    private Prodi $prodi;
+    private ProdiRepository $prodiRepository;
 
     public function __construct(
         MahasiswaRepository $mahasiswaRepository,
-        Prodi $prodi
+        ProdiRepository $prodiRepository
     ) {
         $this->mahasiswaRepository = $mahasiswaRepository;
-        $this->prodi = $prodi;
+        $this->prodiRepository = $prodiRepository;
     }
 
     /**
@@ -86,7 +86,7 @@ class MahasiswaService
         // Validasi program studi.
         if (
             $data['id_prodi'] <= 0 ||
-            !$this->prodi->find($data['id_prodi'])
+            !$this->prodiRepository->find($data['id_prodi'])
         ) {
             $errors['id_prodi'] = 'Program studi wajib dipilih.';
         }
@@ -138,6 +138,8 @@ class MahasiswaService
                 $result['data']
             );
         } catch (PDOException $e) {
+            error_log('Gagal menyimpan mahasiswa: ' . $e->getMessage());
+
             return [
                 'success' => false,
                 'data' => $result['data'],
@@ -166,6 +168,7 @@ class MahasiswaService
             return [
                 'success' => false,
                 'data' => $this->normalize($input),
+                'not_found' => true,
                 'errors' => [
                     'general' => 'Data mahasiswa tidak ditemukan.',
                 ],
@@ -188,6 +191,8 @@ class MahasiswaService
                 $result['data']
             );
         } catch (PDOException $e) {
+            error_log('Gagal memperbarui mahasiswa: ' . $e->getMessage());
+
             return [
                 'success' => false,
                 'data' => $result['data'],

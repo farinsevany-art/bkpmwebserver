@@ -1,0 +1,108 @@
+{
+  "info": {
+    "_postman_id": "45f32e57-80a6-48e8-9d0e-8e149ad84516",
+    "name": "Acara 16 - RESTful API Mahasiswa",
+    "description": "Pengujian GET, POST, PUT, dan DELETE API mahasiswa.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET - Semua Mahasiswa",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mahasiswa",
+          "host": ["{{baseUrl}}"],
+          "path": ["mahasiswa"]
+        }
+      }
+    },
+    {
+      "name": "GET - Mahasiswa berdasarkan ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mahasiswa/{{mahasiswaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["mahasiswa", "{{mahasiswaId}}"]
+        }
+      }
+    },
+    {
+      "name": "POST - Tambah Mahasiswa",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"23005\",\n  \"nama\": \"Rina\",\n  \"email\": \"rina@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mahasiswa",
+          "host": ["{{baseUrl}}"],
+          "path": ["mahasiswa"]
+        }
+      }
+    },
+    {
+      "name": "PUT - Ubah Mahasiswa",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"23005\",\n  \"nama\": \"Rina Putri\",\n  \"email\": \"rina.putri@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/mahasiswa/{{mahasiswaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["mahasiswa", "{{mahasiswaId}}"]
+        }
+      }
+    },
+    {
+      "name": "DELETE - Hapus Mahasiswa",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/mahasiswa/{{mahasiswaId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["mahasiswa", "{{mahasiswaId}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost/minngu1/acara16/api"
+    },
+    {
+      "key": "mahasiswaId",
+      "value": "1"
+    }
+  ]
+}

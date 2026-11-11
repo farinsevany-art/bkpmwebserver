@@ -7,8 +7,8 @@ Project ini merupakan pengembangan dari Acara 13 dengan database MySQL `si-akade
 - Validasi input mahasiswa: NIM, nama, email, jenis kelamin, program studi, angkatan, alamat, dan status.
 - CSRF token untuk seluruh form POST (login, logout, tambah, edit, hapus, dan modul lain).
 - Penanganan exception terpusat agar detail teknis tidak ditampilkan kepada pengguna.
-- Logging exception ke `storage/logs/app.log`.
-- Flash message untuk notifikasi berhasil/gagal.
+- Logging exception pada proses tambah, ubah, dan hapus mahasiswa ke `storage/logs/app.log`.
+- Flash message untuk notifikasi berhasil/gagal, termasuk NIM yang sudah terdaftar.
 - Pola PRG setelah proses simpan, ubah, hapus, serta redirect setelah validasi gagal.
 - CRUD mahasiswa memakai kolom pada database `si-akademik` yang tersedia.
 

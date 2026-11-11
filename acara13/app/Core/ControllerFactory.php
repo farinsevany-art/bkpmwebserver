@@ -9,8 +9,21 @@ class ControllerFactory
     public static function make(string $controllerClass): object
     {
         switch ($controllerClass) {
-            case MahasiswaController::class:
-                return new MahasiswaController(new MahasiswaRepository(new Database()), new Prodi());
+            case MahasiswaController::class: {
+                $database = new Database();
+                $mahasiswaRepository = new MahasiswaRepository($database);
+                $prodiRepository = new ProdiRepository($database);
+                $mahasiswaService = new MahasiswaService(
+                    $mahasiswaRepository,
+                    $prodiRepository
+                );
+
+                return new MahasiswaController(
+                    $mahasiswaRepository,
+                    $prodiRepository,
+                    $mahasiswaService
+                );
+            }
 
             case HomeController::class:
                 return new HomeController(new MahasiswaRepository(new Database()), new Prodi(), new MataKuliah());

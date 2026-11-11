@@ -84,7 +84,9 @@ Jalankan Apache dan MySQL melalui XAMPP, pastikan konfigurasi database benar, la
 ## Perubahan Acara 13
 
 - Menambahkan `app/Services/MahasiswaService.php` untuk validasi dan logika bisnis mahasiswa.
-- `MahasiswaController::store()` dan `update()` memanggil Service, bukan menjalankan validasi secara langsung.
-- `MahasiswaRepository` tetap menjadi tempat operasi query database.
+- `MahasiswaService` menerima `MahasiswaRepository` dan `ProdiRepository` melalui constructor.
+- `MahasiswaController::store()` dan `update()` memanggil Service; validasi dan penyimpanan data berada di Service.
+- `MahasiswaRepository` dan `ProdiRepository` menangani operasi query database.
 - Autoload di `public/index.php` sudah mencakup folder `app/Services/`.
-- Flash Message menggunakan session dan ditampilkan sekali melalui layout header.
+- Flash Message menggunakan session untuk keberhasilan tambah/ubah, kegagalan simpan/ubah, dan NIM duplikat.
+- Pesan diambil dan dihapus dari session setelah ditampilkan melalui layout header.
