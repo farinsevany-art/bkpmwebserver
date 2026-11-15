@@ -30,6 +30,11 @@ class Mahasiswa {
             ]);
             return $this->db->lastInsertId();
         } catch (PDOException $e) {
+            if ($e->getCode() === '23000') {
+                Response::json(422, false, 'NIM sudah terdaftar');
+            }
+
+            error_log('Mahasiswa create failed: ' . $e->getMessage());
             Response::json(500, false, 'Terjadi kesalahan pada server');
         }
     }
@@ -46,6 +51,11 @@ class Mahasiswa {
                 ':prodi' => $data['prodi']
             ]);
         } catch (PDOException $e) {
+            if ($e->getCode() === '23000') {
+                Response::json(422, false, 'NIM sudah terdaftar');
+            }
+
+            error_log('Mahasiswa update failed: ' . $e->getMessage());
             Response::json(500, false, 'Terjadi kesalahan pada server');
         }
     }
@@ -55,6 +65,7 @@ class Mahasiswa {
             $stmt = $this->db->prepare('DELETE FROM mahasiswa WHERE id = :id');
             return $stmt->execute([':id' => $id]);
         } catch (PDOException $e) {
+            error_log('Mahasiswa delete failed: ' . $e->getMessage());
             Response::json(500, false, 'Terjadi kesalahan pada server');
         }
     }

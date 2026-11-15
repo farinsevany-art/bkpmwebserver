@@ -27,8 +27,7 @@ class Router {
             return;
         }
 
-        $allowedMethods = ['GET', 'POST', 'PUT', 'DELETE'];
-        if (!in_array($_SERVER['REQUEST_METHOD'], $allowedMethods)) {
+        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
             Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
         }
 

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - Sistem Informasi Akademik</title>
+    <style>
+        body {
+            display: grid;
+            min-height: 100vh;
+            margin: 0;
+            place-items: center;
+            color: #172033;
+            background: #eff4ff;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            width: min(400px, calc(100% - 2rem));
+            padding: 2rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(23, 32, 51, 0.12);
+        }
+
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: 600;
+        }
+
+        input {
+            box-sizing: border-box;
+            width: 100%;
+            margin-top: 0.4rem;
+            padding: 0.7rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 1.25rem;
+            padding: 0.75rem;
+            color: #fff;
+            background: #1d4ed8;
+            border: 0;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        #login-error {
+            color: #b91c1c;
+        }
+    </style>
+    <script src="login.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Login</h1>
+        <p>Masuk untuk melihat dashboard akademik.</p>
+        <form id="form-login">
+            <label for="username">Username</label>
+            <input id="username" name="username" autocomplete="username" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+            <button type="submit">Masuk</button>
+            <p id="login-error" role="alert" aria-live="polite"></p>
+        </form>
+    </main>
+</body>
+</html>

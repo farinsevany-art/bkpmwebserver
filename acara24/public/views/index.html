@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Mahasiswa</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            color: #172033;
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(23, 32, 51, 0.08);
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        #status {
+            min-height: 1.5rem;
+            color: #475569;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            color: #fff;
+            background: #1d4ed8;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+    </style>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <main>
+        <h1>Data Mahasiswa</h1>
+        <p id="status" role="status" aria-live="polite">Memuat data...</p>
+        <div class="table-wrap">
+            <table id="tabel-mahasiswa">
+                <thead>
+                    <tr>
+                        <th scope="col">NIM</th>
+                        <th scope="col">Nama</th>
+                        <th scope="col">Program Studi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>

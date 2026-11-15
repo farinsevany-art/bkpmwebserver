@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Akademik</title>
+</head>
+<body>
+    <p>Mengarahkan ke halaman yang sesuai...</p>
+    <script>
+        const destination = localStorage.getItem('token') ? 'dashboard.html' : 'login.html';
+        window.location.replace(destination);
+    </script>
+</body>
+</html>

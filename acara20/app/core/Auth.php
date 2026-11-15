@@ -8,6 +8,16 @@ class Auth {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
+    private static function base64urlDecode(string $data) {
+        $base64 = strtr($data, '-_', '+/');
+        $padding = strlen($base64) % 4;
+        if ($padding !== 0) {
+            $base64 .= str_repeat('=', 4 - $padding);
+        }
+
+        return base64_decode($base64, true);
+    }
+
     /**
      * Membuat token JWT dengan payload pengguna.
      * Tugas Mandiri 2: Masa berlaku token diubah menjadi 5 menit (300 detik).
@@ -23,19 +33,34 @@ class Auth {
 
     public static function validateToken(string $token) {
         $parts = explode('.', $token);
-        if (count($parts) !== 3) return false;
+        if (count($parts) !== 3 || in_array('', $parts, true)) return false;
         [$header, $payload, $signature] = $parts;
+
+        $headerData = self::base64urlDecode($header);
+        if ($headerData === false) return false;
+        $headerData = json_decode($headerData, true);
+        if (!is_array($headerData) || ($headerData['alg'] ?? null) !== 'HS256') return false;
+
         $valid = self::base64url(hash_hmac('sha256', "$header.$payload", self::SECRET, true));
         if (!hash_equals($valid, $signature)) return false;
-        $data = json_decode(base64_decode($payload), true);
-        if ($data['exp'] < time()) return false;
+
+        $payloadData = self::base64urlDecode($payload);
+        if ($payloadData === false) return false;
+        $data = json_decode($payloadData, true);
+        if (!is_array($data) || !isset($data['exp']) || !is_numeric($data['exp']) || $data['exp'] < time()) {
+            return false;
+        }
+
         return $data;
     }
 
     public static function requireAuth(): array {
-        $headers = getallheaders();
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? '';
-        if (!preg_match('/Bearer\s(\S+)/', $authHeader, $m)) {
+        $headers = function_exists('getallheaders') ? getallheaders() : [];
+        if (!is_array($headers)) {
+            $headers = [];
+        }
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        if (!is_string($authHeader) || !preg_match('/^Bearer\s+(\S+)$/i', $authHeader, $m)) {
             Response::json(401, false, 'Token tidak ditemukan');
         }
         $payload = self::validateToken($m[1]);

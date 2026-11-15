@@ -1,0 +1,409 @@
+openapi: 3.0.3
+info:
+  title: API Sistem Informasi Akademik
+  description: |
+    Dokumentasi OpenAPI untuk endpoint autentikasi dan data mahasiswa.
+    API diimplementasikan pada project Acara 21; server lokal memakai rewrite
+    pada folder public agar path resource diteruskan ke Router.
+  version: 1.0.0
+servers:
+  - url: http://localhost/minngu1/acara21/public
+    description: Server Laragon lokal (project Acara 21)
+tags:
+  - name: Authentication
+    description: Registrasi dan login pengguna
+  - name: Mahasiswa
+    description: Pengelolaan data mahasiswa
+paths:
+  /register:
+    post:
+      tags:
+        - Authentication
+      summary: Mendaftarkan pengguna baru
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              username: mahasiswa1
+              email: mahasiswa1@example.com
+              password: rahasia123
+      responses:
+        '201':
+          description: Registrasi berhasil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Registrasi berhasil
+                data:
+                  id: '1'
+                errors: []
+                timestamp: '2026-11-14T20:00:00+07:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          description: Format email tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: false
+                message: Format email tidak valid
+                data: null
+                errors: []
+                timestamp: '2026-11-14T20:00:00+07:00'
+
+  /login:
+    post:
+      tags:
+        - Authentication
+      summary: Login dan memperoleh JWT
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: mahasiswa1
+              password: rahasia123
+      responses:
+        '200':
+          description: Login berhasil dan JWT diterbitkan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Login berhasil
+                data:
+                  token: <jwt-token>
+                  role: user
+                errors: []
+                timestamp: '2026-11-14T20:05:00+07:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          description: Username atau password salah
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: false
+                message: Username atau password salah
+                data: null
+                errors: []
+                timestamp: '2026-11-14T20:05:00+07:00'
+
+  /mahasiswa:
+    get:
+      tags:
+        - Mahasiswa
+      summary: Mengambil semua data atau satu mahasiswa
+      operationId: getMahasiswa
+      parameters:
+        - name: id
+          in: query
+          required: false
+          description: Isi untuk mengambil satu mahasiswa berdasarkan ID.
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Data mahasiswa berhasil diambil
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                list:
+                  summary: Daftar mahasiswa
+                  value:
+                    success: true
+                    message: Data berhasil diambil
+                    data:
+                      - id: '1'
+                        nim: E41230001
+                        nama: Ahmad Fauzi
+                        prodi: Teknik Informatika
+                    errors: []
+                    timestamp: '2026-11-14T20:10:00+07:00'
+                single:
+                  summary: Satu mahasiswa
+                  value:
+                    success: true
+                    message: Data berhasil diambil
+                    data:
+                      id: '1'
+                      nim: E41230001
+                      nama: Ahmad Fauzi
+                      prodi: Teknik Informatika
+                    errors: []
+                    timestamp: '2026-11-14T20:10:00+07:00'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    post:
+      tags:
+        - Mahasiswa
+      summary: Menambahkan data mahasiswa
+      operationId: createMahasiswa
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MahasiswaRequest'
+            example:
+              nim: E41230002
+              nama: Siti Aminah
+              prodi: Teknik Informatika
+      responses:
+        '201':
+          description: Data mahasiswa berhasil ditambahkan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Data berhasil ditambahkan
+                data:
+                  id: '2'
+                errors: []
+                timestamp: '2026-11-14T20:12:00+07:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Panjang NIM tidak valid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: false
+                message: Format NIM tidak valid, harus 9 karakter
+                data: null
+                errors:
+                  nim:
+                    - Format NIM tidak valid, harus 9 karakter.
+                timestamp: '2026-11-14T20:12:00+07:00'
+
+  /mahasiswa/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: ID mahasiswa.
+        schema:
+          type: integer
+          minimum: 1
+
+    put:
+      tags:
+        - Mahasiswa
+      summary: Memperbarui data mahasiswa
+      operationId: updateMahasiswa
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MahasiswaRequest'
+            example:
+              nim: E41230001
+              nama: Ahmad Fauzi Updated
+              prodi: Teknik Informatika
+      responses:
+        '200':
+          description: Data mahasiswa berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Data berhasil diperbarui
+                data: null
+                errors: []
+                timestamp: '2026-11-14T20:15:00+07:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags:
+        - Mahasiswa
+      summary: Menghapus data mahasiswa
+      operationId: deleteMahasiswa
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data mahasiswa berhasil dihapus
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: true
+                message: Data berhasil dihapus
+                data: null
+                errors: []
+                timestamp: '2026-11-14T20:17:00+07:00'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      required:
+        - success
+        - message
+        - data
+        - errors
+        - timestamp
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          description: Data response, dapat berupa objek, daftar, atau null.
+        errors:
+          description: Daftar error atau detail validasi per field.
+          oneOf:
+            - type: array
+              items:
+                type: string
+            - type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: mahasiswa1
+        email:
+          type: string
+          format: email
+          example: mahasiswa1@example.com
+        password:
+          type: string
+          format: password
+          example: rahasia123
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          example: mahasiswa1
+        password:
+          type: string
+          format: password
+          example: rahasia123
+
+    MahasiswaRequest:
+      type: object
+      required:
+        - nim
+        - nama
+        - prodi
+      properties:
+        nim:
+          type: string
+          minLength: 9
+          maxLength: 9
+          example: E41230002
+        nama:
+          type: string
+          example: Siti Aminah
+        prodi:
+          type: string
+          example: Teknik Informatika
+
+  responses:
+    BadRequest:
+      description: Request JSON, field wajib, atau ID tidak valid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            message: Field nim, nama, dan prodi wajib diisi
+            data: null
+            errors:
+              nim:
+                - Field nim wajib diisi dengan teks.
+            timestamp: '2026-11-14T20:20:00+07:00'
+    Unauthorized:
+      description: Token Bearer tidak ada, tidak valid, atau kedaluwarsa.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            message: Token tidak ditemukan
+            data: null
+            errors: []
+            timestamp: '2026-11-14T20:20:00+07:00'
+    NotFound:
+      description: Endpoint atau data mahasiswa tidak ditemukan.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            message: Data tidak ditemukan
+            data: null
+            errors: []
+            timestamp: '2026-11-14T20:20:00+07:00'

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Akademik</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 2rem;
+            color: #172033;
+            background: #f4f7fb;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .topbar,
+        .summary,
+        .table-panel {
+            padding: 1.25rem;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 6px 20px rgba(23, 32, 51, 0.07);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .summary {
+            width: fit-content;
+            min-width: 180px;
+            margin-bottom: 1rem;
+        }
+
+        #total-mahasiswa {
+            display: block;
+            margin-top: 0.4rem;
+            color: #1d4ed8;
+            font-size: 2rem;
+        }
+
+        .table-panel {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        th {
+            color: #fff;
+            background: #1d4ed8;
+        }
+
+        button {
+            padding: 0.55rem 0.8rem;
+            border: 0;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #btn-tambah {
+            color: #fff;
+            background: #15803d;
+        }
+
+        #btn-logout {
+            color: #fff;
+            background: #475569;
+        }
+
+        .btn-edit {
+            margin-right: 0.35rem;
+            color: #172033;
+            background: #fbbf24;
+        }
+
+        .btn-hapus {
+            color: #fff;
+            background: #dc2626;
+        }
+
+        #status {
+            min-height: 1.5rem;
+        }
+
+        #status[data-error="true"] {
+            color: #b91c1c;
+        }
+
+        dialog {
+            width: min(420px, calc(100% - 3rem));
+            border: 0;
+            border-radius: 10px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        dialog label {
+            display: block;
+            margin-top: 0.8rem;
+        }
+
+        dialog input,
+        dialog select,
+        dialog textarea {
+            box-sizing: border-box;
+            width: 100%;
+            margin-top: 0.3rem;
+            padding: 0.65rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+        }
+
+        dialog menu {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0;
+        }
+    </style>
+    <script src="dashboard.js" defer></script>
+</head>
+<body>
+    <main>
+        <header class="topbar">
+            <div>
+                <h1>Dashboard Akademik</h1>
+                <p id="welcome"></p>
+            </div>
+            <button id="btn-logout" type="button">Logout</button>
+        </header>
+
+        <section class="summary" aria-label="Ringkasan mahasiswa">
+            <span>Total Mahasiswa</span>
+            <strong id="total-mahasiswa">0</strong>
+        </section>
+
+        <section class="table-panel">
+            <button id="btn-tambah" type="button" hidden>Tambah Mahasiswa</button>
+            <p id="status" role="status" aria-live="polite">Memuat data...</p>
+            <table id="tabel-mahasiswa">
+                <thead>
+                    <tr>
+                        <th scope="col">NIM</th>
+                        <th scope="col">Nama</th>
+                        <th scope="col">ID Program Studi</th>
+                        <th scope="col">Angkatan</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Foto</th>
+                        <th id="kolom-aksi" scope="col" hidden>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <dialog id="dialog-mahasiswa">
+            <form id="form-mahasiswa">
+                <h2 id="judul-form">Tambah Mahasiswa</h2>
+                <input id="mahasiswa-id" name="id" type="hidden">
+
+                <label for="nim">NIM</label>
+                <input id="nim" name="nim" maxlength="20" required>
+
+                <label for="nama">Nama</label>
+                <input id="nama" name="nama" maxlength="100" required>
+
+                <label for="jenis_kelamin">Jenis Kelamin</label>
+                <select id="jenis_kelamin" name="jenis_kelamin" required>
+                    <option value="L">Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                </select>
+
+                <label for="alamat">Alamat</label>
+                <textarea id="alamat" name="alamat" rows="3"></textarea>
+
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email" maxlength="100">
+
+                <label for="id_prodi">ID Program Studi</label>
+                <input id="id_prodi" name="id_prodi" type="number" min="1" step="1" required>
+
+                <label for="angkatan">Angkatan</label>
+                <input id="angkatan" name="angkatan" type="number" min="1901" max="2155" step="1" required>
+
+                <label for="status-mahasiswa">Status</label>
+                <select id="status-mahasiswa" name="status" required>
+                    <option value="aktif">Aktif</option>
+                    <option value="cuti">Cuti</option>
+                    <option value="lulus">Lulus</option>
+                </select>
+
+                <label for="foto">Foto (JPG/PNG, maksimal 2MB)</label>
+                <input id="foto" name="foto" type="file" accept=".jpg,.jpeg,.png,image/jpeg,image/png">
+                <div id="foto-saat-ini"></div>
+
+                <menu>
+                    <button id="btn-batal" type="button">Batal</button>
+                    <button type="submit">Simpan</button>
+                </menu>
+            </form>
+        </dialog>
+    </main>
+</body>
+</html>

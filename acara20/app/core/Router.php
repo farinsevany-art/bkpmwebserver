@@ -8,8 +8,11 @@ class Router {
     ];
 
     public function dispatch(): void {
-        $url = $_GET['url'] ?? '';
+        $url = $_GET['url'] ?? 'mahasiswa';
         $url = rtrim($url, '/');
+        if ($url === '') {
+            $url = 'mahasiswa';
+        }
         $urlSegments = explode('/', $url);
         $resource = $urlSegments[0] ?? '';
 

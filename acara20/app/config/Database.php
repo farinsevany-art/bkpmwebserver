@@ -21,7 +21,8 @@ class Database {
             try {
                 self::$conn = new PDO($dsn, self::$user, self::$pass, $options);
             } catch (PDOException $e) {
-                die('Koneksi Database Gagal: ' . $e->getMessage());
+                error_log('Database connection failed: ' . $e->getMessage());
+                Response::json(500, false, 'Terjadi kesalahan pada server');
             }
         }
 
