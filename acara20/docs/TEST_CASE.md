@@ -1,68 +1,64 @@
-# Laporan Manual Testing dan Blackbox Testing
+# Pengujian Autentikasi JWT dan API Mahasiswa
 
 ## Informasi pengujian
 
-- **Aplikasi:** RESTful API Sistem Informasi Akademik
-- **Metode:** Manual testing dengan teknik Equivalence Partitioning
+- **Aplikasi:** RESTful API Sistem Informasi Akademik (Acara 20)
 - **Alat:** Laragon, Postman, dan MySQL
 - **Base URL:** `http://localhost/minngu1/acara20/public/index.php`
-- **Tanggal pengujian:** 14 November 2026
-- **Pelaksana:** Pengguna
-- **Prasyarat:** Apache dan MySQL berjalan; tabel `users` dan `mahasiswa` tersedia; siapkan akun untuk login dan token yang belum kedaluwarsa.
+- **Routing:** parameter query `url`, misalnya `?url=login` atau `?url=mahasiswa/T12345678`
+- **Prasyarat:** Apache dan MySQL berjalan; tabel `users`, `mahasiswa`, dan `prodi` tersedia.
 
-> Hasil aktual pada tabel dicatat berdasarkan konfirmasi pengguna bahwa seluruh skenario telah dicoba melalui Postman dan berhasil.
+Akun dari Acara 19 dapat digunakan untuk login karena Acara 19 dan Acara 20 menggunakan database `si-akademik` yang sama. Jangan menyimpan password akun pribadi di collection atau laporan.
 
-## Header dan contoh data
+## Menyiapkan Postman
 
-Request dengan body memakai:
+1. Import `postman/API-Sistem-Informasi-Akademik-Acara20.postman_collection.json` dan `postman/Local-Acara20.postman_environment.json`.
+2. Pilih environment **Local Acara 20**.
+3. Isi `login_username` dan `login_password` dengan akun yang terdaftar dari Acara 19. `id_prodi` bernilai `1` secara default; sesuaikan jika ID tersebut tidak tersedia.
+4. Jalankan request secara berurutan. Request login sukses menyimpan JWT sebagai `auth_token`; request POST mahasiswa membuat NIM uji untuk request PUT dan DELETE.
+5. Request POST/PUT/DELETE yang sah mengirim header `Authorization: Bearer {{auth_token}}`. Request negatif sengaja tidak mengirim header atau menambahkan karakter pada token.
 
-```http
-Content-Type: application/json
-```
-
-Request terlindungi juga memakai:
-
-```http
-Authorization: Bearer <token-dari-login>
-```
-
-Contoh body mahasiswa yang valid:
+Contoh body mahasiswa:
 
 ```json
 {
-  "nim": "220100123",
+  "nim": "T12345678",
   "nama": "Mahasiswa Uji",
-  "prodi": "Teknik Informatika"
+  "jenis_kelamin": "P",
+  "alamat": "Alamat pengujian",
+  "email": "uji@example.test",
+  "id_prodi": 1,
+  "angkatan": 2025,
+  "status": "aktif",
+  "foto": null
 }
 ```
 
-NIM harus berisi 9 karakter. Untuk pengujian duplikasi, pastikan kolom `mahasiswa.nim` memiliki indeks `UNIQUE` dan gunakan NIM yang sudah ada.
+NIM dan email harus unik. Collection membuat nilai uji secara otomatis. Request DELETE menghapus data uji yang dibuat oleh request POST tersebut.
 
 ## Test case
 
-| ID | Skenario | Data uji / request | Hasil yang diharapkan | Hasil aktual | Status |
-|---|---|---|---|---|---|
-| TC-01 | Menambahkan mahasiswa dengan data valid | `POST ?url=mahasiswa`, body valid, Bearer Token valid | `201 Created`, data berhasil ditambahkan | `201 Created`, sesuai harapan | Pass |
-| TC-02 | Menambahkan mahasiswa dengan NIM kosong | `POST ?url=mahasiswa`, `"nim": ""`, Bearer Token valid | `400 Bad Request`, field NIM wajib diisi | `400 Bad Request`, sesuai harapan | Pass |
-| TC-03 | Menambahkan NIM duplikat | `POST ?url=mahasiswa`, NIM yang sudah tersimpan, Bearer Token valid | `422 Unprocessable Entity`, NIM sudah terdaftar | `422 Unprocessable Entity`, sesuai harapan | Pass |
-| TC-04 | Login dengan kredensial benar | `POST ?url=login`, username dan password terdaftar | `200 OK`, respons berisi token | `200 OK`, token diterima | Pass |
-| TC-05 | Login dengan password salah | `POST ?url=login`, password yang salah | `401 Unauthorized` | `401 Unauthorized`, sesuai harapan | Pass |
-| TC-06 | Menambahkan mahasiswa tanpa token | `POST ?url=mahasiswa`, body valid, tanpa `Authorization` | `401 Unauthorized` | `401 Unauthorized`, sesuai harapan | Pass |
-| TC-07 | Memperbarui mahasiswa dengan ID dan data valid | `PUT ?url=mahasiswa/{id}`, ID yang ada, body valid, Bearer Token valid | `200 OK`, data berhasil diperbarui | `200 OK`, sesuai harapan | Pass |
-| TC-08 | Memperbarui mahasiswa tanpa ID | `PUT ?url=mahasiswa`, body valid, Bearer Token valid | `400 Bad Request`, ID wajib diisi | `400 Bad Request`, sesuai harapan | Pass |
-| TC-09 | Memperbarui mahasiswa dengan ID yang tidak ditemukan | `PUT ?url=mahasiswa/999999`, body valid, Bearer Token valid | `404 Not Found` | `404 Not Found`, sesuai harapan | Pass |
-| TC-10 | Memperbarui mahasiswa dengan NIM duplikat | `PUT ?url=mahasiswa/{id}`, NIM milik data lain, Bearer Token valid | `422 Unprocessable Entity`, NIM sudah terdaftar | `422 Unprocessable Entity`, sesuai harapan | Pass |
-| TC-11 | Memperbarui mahasiswa dengan NIM terlalu pendek | `PUT ?url=mahasiswa/{id}`, NIM `123`, Bearer Token valid | `422 Unprocessable Entity`, panjang NIM tidak valid | `422 Unprocessable Entity`, sesuai harapan | Pass |
-| TC-12 | Memperbarui mahasiswa tanpa token | `PUT ?url=mahasiswa/{id}`, body valid, tanpa `Authorization` | `401 Unauthorized` | `401 Unauthorized`, sesuai harapan | Pass |
-| TC-13 | Menghapus mahasiswa yang ada | `DELETE ?url=mahasiswa/{id}`, ID yang ada, Bearer Token valid | `200 OK`, data berhasil dihapus | `200 OK`, sesuai harapan | Pass |
-| TC-14 | Menghapus mahasiswa dengan ID yang tidak ditemukan | `DELETE ?url=mahasiswa/999999`, Bearer Token valid | `404 Not Found` | `404 Not Found`, sesuai harapan | Pass |
-| TC-15 | Menghapus mahasiswa tanpa token | `DELETE ?url=mahasiswa/{id}`, tanpa `Authorization` | `401 Unauthorized` | `401 Unauthorized`, sesuai harapan | Pass |
-| TC-16 | Menghapus mahasiswa tanpa ID | `DELETE ?url=mahasiswa`, Bearer Token valid | `400 Bad Request`, ID wajib diisi | `400 Bad Request`, sesuai harapan | Pass |
+| ID | Skenario | Hasil yang diharapkan | Hasil aktual | Status |
+|---|---|---:|---:|---|
+| TC-01 | Login dengan username dan password yang benar | 200, respons berisi token | 200, token diterima | Pass |
+| TC-02 | Login dengan password salah | 401 | 401 | Pass |
+| TC-03 | GET daftar mahasiswa tanpa token | 200 | 200 | Pass |
+| TC-04 | POST mahasiswa dengan token valid | 201 | 201 | Pass |
+| TC-05 | POST mahasiswa tanpa token | 401 | 401 | Pass |
+| TC-06 | POST mahasiswa dengan token yang diubah | 401 | 401 | Pass |
+| TC-07 | PUT mahasiswa dengan token valid | 200 | 200 | Pass |
+| TC-08 | PUT mahasiswa tanpa token | 401 | 401 | Pass |
+| TC-09 | PUT mahasiswa dengan token yang diubah | 401 | 401 | Pass |
+| TC-10 | DELETE mahasiswa dengan token valid | 200 | 200 | Pass |
+| TC-11 | DELETE mahasiswa tanpa token | 401 | 401 | Pass |
+| TC-12 | DELETE mahasiswa dengan token yang diubah | 401 | 401 | Pass |
+| TC-13 | Mengakses API dengan token bertanda tangan valid tetapi sudah kedaluwarsa | 401 | 401 | Pass |
+| TC-14 | GET mahasiswa setelah data uji dihapus | 404 | 404 | Pass |
 
-## Catatan eksekusi
+Pengujian lokal memakai akun sementara pada tabel `users` dan data mahasiswa sementara. Semua data sementara dibersihkan setelah pengujian. Masa berlaku token baru diverifikasi sebesar 300 detik; token kedaluwarsa ditolak oleh API.
 
-1. Login untuk memperoleh token. Token berlaku selama 5 menit; login kembali jika token kedaluwarsa.
-2. Pada Postman, masukkan token di **Authorization → Bearer Token** untuk request terlindungi.
-3. Ganti `{id}` dengan ID mahasiswa yang benar-benar ada untuk skenario sukses.
-4. Gunakan NIM pengujian yang aman dan tidak dipakai data penting. Pengujian DELETE akan menghapus data secara permanen.
-5. Untuk TC-03 dan TC-10, pastikan indeks unik pada `mahasiswa.nim` aktif. Simpan respons/status HTTP aktual sebagai bukti pengujian.
+## Kesimpulan JWT stateless dan logout
+
+JWT stateless menyimpan klaim dan waktu kedaluwarsa di dalam token yang ditandatangani server. Server tidak menyimpan sesi atau daftar token aktif, sehingga membuang token dari sisi client hanya menghapus salinan client; token yang sudah diterbitkan tetap dapat digunakan sampai kedaluwarsa.
+
+Logout yang langsung membatalkan token memerlukan mekanisme tambahan di sisi server, misalnya blacklist berisi ID token (`jti`) sampai waktu kedaluwarsanya. Setiap request perlu memeriksa blacklist tersebut. Cara ini menambah penyimpanan dan pemeriksaan server, sehingga autentikasi tidak lagi sepenuhnya stateless. Untuk implementasi saat ini, token berlaku lima menit dan setelah itu harus ditolak; penghapusan token pada client saja bukan pencabutan token di server.

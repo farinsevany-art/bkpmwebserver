@@ -1,0 +1,332 @@
+{
+  "info": {
+    "_postman_id": "00dbab61-3edc-424c-93e8-d57e329960ba",
+    "name": "API Sistem Informasi Akademik (Acara 21)",
+    "description": "Autentikasi register/login dan CRUD mahasiswa berbasis NIM.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST - Register",
+      "description": "Controller: AuthController::register(). Daftarkan akun baru. Nilai request dibuat unik oleh pre-request script.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = String(Date.now());",
+              "pm.collectionVariables.set('register_username', 'mahasiswa_' + suffix);",
+              "pm.collectionVariables.set('register_email', 'mahasiswa_' + suffix + '@example.test');",
+              "pm.collectionVariables.set('register_password', 'contoh-password-123');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{register_username}}\",\n  \"email\": \"{{register_email}}\",\n  \"password\": \"{{register_password}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/register" }
+      },
+      "response": [
+        {
+          "name": "201 - Registrasi berhasil",
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Registrasi berhasil\",\n  \"data\": { \"id\": \"1\" },\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:00:00+07:00\"\n}"
+        },
+        {
+          "name": "422 - Format email tidak valid",
+          "status": "Unprocessable Entity",
+          "code": 422,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Format email tidak valid\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:00:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "POST - Login berhasil",
+      "description": "Controller: AuthController::login(). Isi Local environment dengan akun yang terdaftar. Token disimpan otomatis sebagai collection variable auth_token.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Token tersedia', function () { pm.expect(pm.response.json().data.token).to.be.a('string'); });",
+              "pm.collectionVariables.set('auth_token', pm.response.json().data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{login_username}}\",\n  \"password\": \"{{login_password}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/login" }
+      },
+      "response": [
+        {
+          "name": "200 - Login berhasil",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Login berhasil\",\n  \"data\": { \"token\": \"<jwt-token>\", \"role\": \"user\" },\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:05:00+07:00\"\n}"
+        },
+        {
+          "name": "401 - Kredensial salah",
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Username atau password salah\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:05:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "GET - Semua Mahasiswa",
+      "description": "Controller: MahasiswaController::index(). Endpoint publik; mengambil semua data mahasiswa.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Data berupa array', function () { pm.expect(pm.response.json().data).to.be.an('array'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/mahasiswa" }
+      },
+      "response": [
+        {
+          "name": "200 - Daftar mahasiswa",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Data berhasil diambil\",\n  \"data\": [],\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:10:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "GET - Mahasiswa tidak ditemukan",
+      "description": "Controller: MahasiswaController::index(). Contoh response 404 berdasarkan skenario Acara 18.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 404', function () { pm.response.to.have.status(404); });",
+              "pm.test('Error NIM tersedia', function () { pm.expect(pm.response.json().errors).to.have.property('nim'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}/mahasiswa/E412515000" }
+      },
+      "response": [
+        {
+          "name": "404 - Data mahasiswa tidak ditemukan",
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Data mahasiswa tidak ditemukan\",\n  \"data\": null,\n  \"errors\": { \"nim\": [\"Data mahasiswa dengan NIM tersebut tidak ditemukan.\"] },\n  \"timestamp\": \"2026-11-18T20:10:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "POST - Tambah Mahasiswa",
+      "description": "Controller: MahasiswaController::store(). Contoh data mahasiswa Acara 17, dengan Bearer Token dari login.",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = String(Math.floor(10000000 + Math.random() * 90000000));",
+              "pm.collectionVariables.set('test_nim', 'T' + suffix);",
+              "pm.collectionVariables.set('test_email', 'student.' + suffix + '@example.test');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('NIM sesuai', function () { pm.expect(pm.response.json().data.nim).to.eql(pm.collectionVariables.get('test_nim')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Siti Aminah\",\n  \"jenis_kelamin\": \"P\",\n  \"alamat\": \"Jl. Contoh Baru\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": \"2024\",\n  \"status\": \"aktif\",\n  \"foto\": null\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/mahasiswa" }
+      },
+      "response": [
+        {
+          "name": "201 - Mahasiswa ditambahkan",
+          "status": "Created",
+          "code": 201,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Data berhasil ditambahkan\",\n  \"data\": { \"nim\": \"T12345678\", \"nama\": \"Siti Aminah\", \"jenis_kelamin\": \"P\", \"alamat\": \"Jl. Contoh Baru\", \"email\": \"siti.updated@example.com\", \"id_prodi\": 1, \"angkatan\": 2024, \"status\": \"aktif\", \"foto\": null },\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:12:00+07:00\"\n}"
+        },
+        {
+          "name": "401 - Token tidak ditemukan",
+          "status": "Unauthorized",
+          "code": 401,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Token tidak ditemukan\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:12:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "PUT - Perbarui Mahasiswa",
+      "description": "Controller: MahasiswaController::update(). Update seluruh field atau sebagian field. Memerlukan Bearer Token.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Siti Aminah Updated\",\n  \"jenis_kelamin\": \"P\",\n  \"alamat\": \"Jl. Contoh Baru\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": \"2024\",\n  \"status\": \"aktif\",\n  \"foto\": null\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}/mahasiswa/{{test_nim}}" }
+      },
+      "response": [
+        {
+          "name": "200 - Mahasiswa diperbarui",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Data berhasil diperbarui\",\n  \"data\": { \"nim\": \"T12345678\", \"nama\": \"Siti Aminah Updated\", \"jenis_kelamin\": \"P\", \"alamat\": \"Jl. Contoh Baru\", \"email\": \"siti.updated@example.com\", \"id_prodi\": 1, \"angkatan\": 2024, \"status\": \"aktif\", \"foto\": null },\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:15:00+07:00\"\n}"
+        },
+        {
+          "name": "404 - Mahasiswa tidak ditemukan",
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json"}],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Data mahasiswa tidak ditemukan\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:15:00+07:00\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "DELETE - Hapus Mahasiswa",
+      "description": "Controller: MahasiswaController::destroy(). Menghapus data uji berdasarkan NIM. Memerlukan Bearer Token.",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}/mahasiswa/{{test_nim}}" }
+      },
+      "response": [
+        {
+          "name": "200 - Mahasiswa dihapus",
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "cookie": [],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Data berhasil dihapus\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:17:00+07:00\"\n}"
+        },
+        {
+          "name": "404 - Mahasiswa tidak ditemukan",
+          "status": "Not Found",
+          "code": 404,
+          "_postman_previewlanguage": "json",
+          "header": [{ "key": "Content-Type", "value": "application/json"}],
+          "cookie": [],
+          "body": "{\n  \"success\": false,\n  \"message\": \"Data mahasiswa tidak ditemukan\",\n  \"data\": null,\n  \"errors\": [],\n  \"timestamp\": \"2026-11-18T20:17:00+07:00\"\n}"
+        }
+      ]
+    }
+  ]
+}

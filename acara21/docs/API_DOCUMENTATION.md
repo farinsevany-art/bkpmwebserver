@@ -1,20 +1,22 @@
 # Dokumentasi API - Sistem Informasi Akademik
 
-Dokumentasi ini mengikuti implementasi API Native PHP pada Acara 21.
+Dokumen ini menjelaskan endpoint yang ditangani `AuthController` dan `MahasiswaController` pada Acara 21. Contoh mahasiswa mengikuti field yang digunakan pada Acara 17, contoh data tidak ditemukan mengikuti respons Acara 18, dan alur register/login mengikuti controller Acara 19-20.
 
-## Base URL dan format request
+## Base URL dan format umum
 
 ```text
-http://localhost/minngu1/acara21/public/index.php
+http://localhost/minngu1/acara21/public
 ```
 
-Router menerima endpoint melalui parameter `url`. Untuk request dengan body JSON, gunakan header:
+`public/.htaccess` meneruskan path ke front controller. Jika rewrite Apache tidak aktif, gunakan `http://localhost/minngu1/acara21/public/index.php?url=...`.
+
+Request dengan body JSON menggunakan:
 
 ```http
 Content-Type: application/json
 ```
 
-Format response JSON:
+Format response:
 
 ```json
 {
@@ -22,7 +24,7 @@ Format response JSON:
   "message": "Pesan hasil request",
   "data": null,
   "errors": [],
-  "timestamp": "2026-11-14T20:00:00+07:00"
+  "timestamp": "2026-11-18T20:00:00+07:00"
 }
 ```
 
@@ -30,29 +32,29 @@ Format response JSON:
 
 | Method | URL | Controller dan method | Akses |
 |---|---|---|---|
-| POST | `?url=register` | `AuthController::register()` | Publik |
-| POST | `?url=login` | `AuthController::login()` | Publik |
-| GET | `?url=mahasiswa` | `MahasiswaController::index()` | Publik |
-| GET | `?url=mahasiswa&id={id}` | `MahasiswaController::index()` | Publik |
-| POST | `?url=mahasiswa` | `MahasiswaController::store()` | Bearer Token |
-| PUT | `?url=mahasiswa/{id}` | `MahasiswaController::update()` | Bearer Token |
-| DELETE | `?url=mahasiswa/{id}` | `MahasiswaController::destroy()` | Bearer Token |
+| POST | `/register` | `AuthController::register()` | Publik |
+| POST | `/login` | `AuthController::login()` | Publik |
+| GET | `/mahasiswa` | `MahasiswaController::index()` | Publik |
+| GET | `/mahasiswa/{nim}` atau `/mahasiswa?nim={nim}` | `MahasiswaController::index()` | Publik |
+| POST | `/mahasiswa` | `MahasiswaController::store()` | Bearer Token |
+| PUT | `/mahasiswa/{nim}` | `MahasiswaController::update()` | Bearer Token |
+| DELETE | `/mahasiswa/{nim}` | `MahasiswaController::destroy()` | Bearer Token |
 
 ## 2. Autentikasi
 
 ### POST `/register`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=register`
-
+**URL:** `http://localhost/minngu1/acara21/public/register`  
+**Controller:** `AuthController::register()`  
 **Headers:** `Content-Type: application/json`
 
-**Request body:**
+Contoh body register (JSON sudah dilengkapi kurung kurawal pembuka dan penutup):
 
 ```json
 {
-  "username": "mahasiswa1",
-  "email": "mahasiswa1@example.com",
-  "password": "rahasia123"
+  "username": "mahasiswa_uji",
+  "email": "mahasiswa_uji@example.test",
+  "password": "contoh-password"
 }
 ```
 
@@ -64,24 +66,24 @@ URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=register`
   "message": "Registrasi berhasil",
   "data": { "id": "1" },
   "errors": [],
-  "timestamp": "2026-11-14T20:00:00+07:00"
+  "timestamp": "2026-11-18T20:00:00+07:00"
 }
 ```
 
-Kemungkinan error: `400 Bad Request` jika field wajib kosong atau format JSON salah, `422 Unprocessable Entity` jika email tidak valid.
+`400 Bad Request` dikembalikan jika field wajib tidak diisi; `422 Unprocessable Entity` jika format email tidak valid.
 
 ### POST `/login`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=login`
-
+**URL:** `http://localhost/minngu1/acara21/public/login`  
+**Controller:** `AuthController::login()`  
 **Headers:** `Content-Type: application/json`
 
-**Request body:**
+Login menggunakan username dan password akun yang sudah terdaftar:
 
 ```json
 {
-  "username": "mahasiswa1",
-  "password": "rahasia123"
+  "username": "mahasiswa_uji",
+  "password": "contoh-password"
 }
 ```
 
@@ -96,67 +98,69 @@ URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=login`
     "role": "user"
   },
   "errors": [],
-  "timestamp": "2026-11-14T20:05:00+07:00"
+  "timestamp": "2026-11-18T20:05:00+07:00"
 }
 ```
 
-Token menggunakan JWT HS256 dan berlaku selama 5 menit. Kemungkinan error: `400 Bad Request` jika username/password tidak lengkap, `401 Unauthorized` jika kredensial salah.
+Token JWT menggunakan HS256 dan berlaku selama lima menit. `400 Bad Request` berarti username/password wajib belum lengkap; `401 Unauthorized` berarti kredensial salah.
+
+> Login harus dikirim ke `/login` dengan body `username` dan `password` saja. Request Acara 20 yang memakai `/mahasiswa` dan body `username`, `email`, `password` bukan contoh login.
 
 ## 3. Endpoint mahasiswa
 
 ### GET `/mahasiswa`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa`
+**URL:** `http://localhost/minngu1/acara21/public/mahasiswa`  
+**Controller:** `MahasiswaController::index()`  
+**Akses:** Publik.
 
-Mengambil seluruh data mahasiswa. Tidak memerlukan token.
+Mengambil semua mahasiswa. Respons sukses `200 OK` berisi array pada `data`.
 
-**Response `200 OK`:**
+### GET `/mahasiswa/{nim}`
+
+**URL:** `http://localhost/minngu1/acara21/public/mahasiswa/E412515000`  
+**Controller:** `MahasiswaController::index()`  
+**Akses:** Publik.
+
+Jika NIM ditemukan, respons `200 OK` berisi satu objek mahasiswa. Jika tidak ditemukan, respons `404 Not Found`:
 
 ```json
 {
-  "success": true,
-  "message": "Data berhasil diambil",
-  "data": [
-    {
-      "id": "1",
-      "nim": "E41230001",
-      "nama": "Ahmad Fauzi",
-      "prodi": "Teknik Informatika"
-    }
-  ],
-  "errors": [],
-  "timestamp": "2026-11-14T20:10:00+07:00"
+  "success": false,
+  "message": "Data mahasiswa tidak ditemukan",
+  "data": null,
+  "errors": {
+    "nim": ["Data mahasiswa dengan NIM tersebut tidak ditemukan."]
+  },
+  "timestamp": "2026-11-18T20:10:00+07:00"
 }
 ```
 
-### GET `/mahasiswa` berdasarkan ID
-
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa&id=1`
-
-Mengambil satu data. Jika ID tidak ditemukan, API mengembalikan `404 Not Found`.
+Untuk memakai query string, gunakan `/mahasiswa?nim=E412515000`.
 
 ### POST `/mahasiswa`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa`
+**URL:** `http://localhost/minngu1/acara21/public/mahasiswa`  
+**Controller:** `MahasiswaController::store()`  
+**Headers:** `Content-Type: application/json` dan `Authorization: Bearer <jwt-token>`
 
-**Headers:**
-
-```http
-Content-Type: application/json
-Authorization: Bearer <jwt-token>
-```
-
-**Request body:**
+Request body mengikuti contoh data mahasiswa Acara 17:
 
 ```json
 {
   "nim": "E41230002",
   "nama": "Siti Aminah",
-  "prodi": "Teknik Informatika"
+  "jenis_kelamin": "P",
+  "alamat": "Jl. Contoh Baru",
+  "email": "siti.updated@example.com",
+  "id_prodi": 1,
+  "angkatan": "2024",
+  "status": "aktif",
+  "foto": null
 }
 ```
 
-NIM harus berjumlah 9 karakter.
+Gunakan NIM dan email yang belum terdaftar. NIM harus 9 karakter, `jenis_kelamin` harus `L` atau `P`, `id_prodi` harus tersedia, dan `status` harus `aktif`, `cuti`, atau `lulus`.
 
 **Response `201 Created`:**
 
@@ -164,27 +168,43 @@ NIM harus berjumlah 9 karakter.
 {
   "success": true,
   "message": "Data berhasil ditambahkan",
-  "data": { "id": "2" },
+  "data": {
+    "nim": "E41230002",
+    "nama": "Siti Aminah",
+    "jenis_kelamin": "P",
+    "alamat": "Jl. Contoh Baru",
+    "email": "siti.updated@example.com",
+    "id_prodi": 1,
+    "angkatan": 2024,
+    "status": "aktif",
+    "foto": null
+  },
   "errors": [],
-  "timestamp": "2026-11-14T20:12:00+07:00"
+  "timestamp": "2026-11-18T20:12:00+07:00"
 }
 ```
 
-Kemungkinan error: `400 Bad Request` jika field wajib tidak diisi, `401 Unauthorized` jika token tidak ada/tidak valid, `422 Unprocessable Entity` jika panjang NIM bukan 9 karakter.
+`400 Bad Request` berarti JSON tidak valid, `401 Unauthorized` berarti token tidak ada/tidak valid/kedaluwarsa, dan `422 Unprocessable Entity` berarti data mahasiswa tidak memenuhi validasi.
 
-### PUT `/mahasiswa/{id}`
+### PUT `/mahasiswa/{nim}`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa/1`
-
+**URL:** `http://localhost/minngu1/acara21/public/mahasiswa/E41230002`  
+**Controller:** `MahasiswaController::update()`  
 **Headers:** `Content-Type: application/json` dan `Authorization: Bearer <jwt-token>`
 
-**Request body:**
+Body dapat berisi field yang ingin diperbarui; contoh semua field:
 
 ```json
 {
-  "nim": "E41230001",
-  "nama": "Ahmad Fauzi Updated",
-  "prodi": "Teknik Informatika"
+  "nim": "E41230002",
+  "nama": "Siti Aminah Updated",
+  "jenis_kelamin": "P",
+  "alamat": "Jl. Contoh Baru",
+  "email": "siti.updated@example.com",
+  "id_prodi": 1,
+  "angkatan": "2024",
+  "status": "aktif",
+  "foto": null
 }
 ```
 
@@ -194,18 +214,28 @@ URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa/1`
 {
   "success": true,
   "message": "Data berhasil diperbarui",
-  "data": null,
+  "data": {
+    "nim": "E41230002",
+    "nama": "Siti Aminah Updated",
+    "jenis_kelamin": "P",
+    "alamat": "Jl. Contoh Baru",
+    "email": "siti.updated@example.com",
+    "id_prodi": 1,
+    "angkatan": 2024,
+    "status": "aktif",
+    "foto": null
+  },
   "errors": [],
-  "timestamp": "2026-11-14T20:15:00+07:00"
+  "timestamp": "2026-11-18T20:15:00+07:00"
 }
 ```
 
-Kemungkinan error: `400 Bad Request` jika ID tidak diisi, `401 Unauthorized` jika token tidak ada/tidak valid, `404 Not Found` jika mahasiswa tidak ditemukan.
+Kemungkinan error: `400 Bad Request` jika NIM/body tidak valid, `401 Unauthorized` jika token tidak ada/tidak valid, `404 Not Found` jika NIM tidak ditemukan, dan `422 Unprocessable Entity` jika field tidak valid.
 
-### DELETE `/mahasiswa/{id}`
+### DELETE `/mahasiswa/{nim}`
 
-URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa/1`
-
+**URL:** `http://localhost/minngu1/acara21/public/mahasiswa/E41230002`  
+**Controller:** `MahasiswaController::destroy()`  
 **Headers:** `Authorization: Bearer <jwt-token>`
 
 **Response `200 OK`:**
@@ -216,34 +246,26 @@ URL lengkap: `http://localhost/minngu1/acara21/public/index.php?url=mahasiswa/1`
   "message": "Data berhasil dihapus",
   "data": null,
   "errors": [],
-  "timestamp": "2026-11-14T20:17:00+07:00"
+  "timestamp": "2026-11-18T20:17:00+07:00"
 }
 ```
 
-Kemungkinan error: `400 Bad Request` jika ID tidak diisi, `401 Unauthorized` jika token tidak ada/tidak valid, `404 Not Found` jika mahasiswa tidak ditemukan.
+Jika NIM tidak ditemukan, endpoint mengembalikan `404 Not Found` dengan format error NIM seperti contoh GET. POST, PUT, dan DELETE harus memakai token yang diterima dari `/login`.
 
-## 4. Error umum
+## 4. Ringkasan status HTTP
 
-| HTTP Status | Arti | Contoh |
+| Status | Arti | Contoh |
 |---|---|---|
-| 400 | Request atau field wajib tidak valid | Body register tidak lengkap |
-| 401 | Token atau kredensial tidak valid | Token tidak ada/kedaluwarsa |
-| 404 | Endpoint atau data tidak ditemukan | ID mahasiswa tidak ada |
-| 405 | Method HTTP tidak diizinkan | `GET` pada endpoint login |
-| 422 | Nilai field tidak memenuhi validasi | Format email atau panjang NIM tidak valid |
+| 200 | Request berhasil | Login, GET, PUT, DELETE |
+| 201 | Data berhasil dibuat | Register atau POST mahasiswa |
+| 400 | Request/body/field wajib tidak valid | Body register kosong |
+| 401 | Kredensial atau token tidak valid | Token tidak ada, diubah, atau kedaluwarsa |
+| 404 | Endpoint atau data tidak ditemukan | NIM mahasiswa tidak ada |
+| 405 | Method tidak diizinkan | GET pada `/login` |
+| 422 | Nilai field tidak memenuhi validasi | Format email/NIM tidak valid |
 
-Contoh response error:
+## 5. Collection Postman
 
-```json
-{
-  "success": false,
-  "message": "Token tidak ditemukan",
-  "data": null,
-  "errors": [],
-  "timestamp": "2026-11-14T20:20:00+07:00"
-}
-```
+Import `postman/API-Sistem-Informasi-Akademik-Acara21.postman_collection.json` dan `postman/Local-Acara21.postman_environment.json`. Pilih environment **Local Acara 21**. Isi `login_username` dan `login_password` dengan akun uji yang terdaftar.
 
-## 5. Dokumentasi Postman
-
-Buat Collection **Acara 21 - Sistem Informasi Akademik**, lalu tambahkan setiap request pada tabel endpoint. Isi kolom Description dengan controller/method dan keterangan akses. Simpan contoh response sukses dan gagal melalui fitur **Examples**, kemudian gunakan **View Documentation** untuk menerbitkan dokumentasi Collection.
+Collection memuat deskripsi endpoint serta contoh respons sukses dan gagal. Jalankan login sebelum request mahasiswa yang memerlukan Bearer Token. Gunakan NIM/email unik dan hapus hanya data uji setelah selesai.

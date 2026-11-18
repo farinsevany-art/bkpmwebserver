@@ -9,28 +9,39 @@ class Router {
     public function dispatch(): void {
         $url = $_GET['url'] ?? '';
         $url = rtrim($url, '/');
-        $urlSegments = explode('/', $url);
+        $urlSegments = array_values(array_filter(explode('/', $url), 'strlen'));
         $resource = $urlSegments[0] ?? '';
 
         if (!array_key_exists($resource, $this->map)) {
             Response::json(404, false, 'Endpoint tidak ditemukan');
         }
 
-        $controllerName = $this->map[$resource];
-        $controller = new $controllerName();
-
         if ($resource === 'register') {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
             }
-            $controller->register();
+            (new AuthController())->register();
             return;
         }
 
-        if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-            Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
-        }
+        $nim = $urlSegments[1] ?? ($_GET['nim'] ?? ($_GET['id'] ?? null));
+        $controller = new MahasiswaController();
 
-        $controller->index();
+        switch ($_SERVER['REQUEST_METHOD']) {
+            case 'GET':
+                $controller->index($nim);
+                break;
+            case 'POST':
+                $controller->store();
+                break;
+            case 'PUT':
+                $controller->update($nim);
+                break;
+            case 'DELETE':
+                $controller->destroy($nim);
+                break;
+            default:
+                Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
+        }
     }
 }

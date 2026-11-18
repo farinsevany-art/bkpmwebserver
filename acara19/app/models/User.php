@@ -8,8 +8,9 @@ class User {
     }
 
     public function create(array $data): string {
-        if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            throw new Exception('Format email tidak valid');
+        $email = $data['email'] ?? null;
+        if (!is_string($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Format email tidak valid.');
         }
 
         $stmt = $this->db->prepare(
@@ -21,6 +22,18 @@ class User {
             ':p' => $data['password']
         ]);
         return $this->db->lastInsertId();
+    }
+
+    public function usernameExists(string $username): bool {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM users WHERE username = :u');
+        $stmt->execute([':u' => $username]);
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function emailExists(string $email): bool {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM users WHERE email = :e');
+        $stmt->execute([':e' => $email]);
+        return (int) $stmt->fetchColumn() > 0;
     }
 
     public function findByUsername(string $username) {

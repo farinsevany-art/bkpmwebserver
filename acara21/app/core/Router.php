@@ -43,7 +43,8 @@ class Router {
 
         $method = $_SERVER['REQUEST_METHOD'];
         if ($method === 'GET') {
-            $controller->index();
+            $nim = $urlSegments[1] ?? null;
+            $controller->index($nim);
         } elseif ($method === 'POST') {
             $controller->store();
         } elseif ($method === 'PUT') {

@@ -1,0 +1,317 @@
+{
+  "info": {
+    "_postman_id": "98fb1778-4097-4a47-a9a8-c44bbcb9f12c",
+    "name": "API Sistem Informasi Akademik (Acara 20)",
+    "description": "Uji login JWT, akses CRUD mahasiswa terlindungi, token tanpa autentikasi, dan token yang diubah.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "POST - Login gagal",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{login_username}}\",\n  \"password\": \"password-salah\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=login" }
+      }
+    },
+    {
+      "name": "POST - Login berhasil",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Token tersedia', function () { pm.expect(pm.response.json().data.token).to.be.a('string'); });",
+              "pm.collectionVariables.set('auth_token', pm.response.json().data.token);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{login_username}}\",\n  \"password\": \"{{login_password}}\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=login" }
+      }
+    },
+    {
+      "name": "GET - Semua Mahasiswa (tanpa token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+              "pm.test('Data berupa array', function () { pm.expect(pm.response.json().data).to.be.an('array'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{base_url}}?url=mahasiswa" }
+      }
+    },
+    {
+      "name": "POST - Tambah Mahasiswa (Bearer Token)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const suffix = String(Math.floor(10000000 + Math.random() * 90000000));",
+              "pm.collectionVariables.set('test_nim', 'T' + suffix);",
+              "pm.collectionVariables.set('test_email', 'jwt.test.' + suffix + '@example.test');"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+              "pm.test('NIM tersimpan', function () { pm.expect(pm.response.json().data.nim).to.eql(pm.collectionVariables.get('test_nim')); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Mahasiswa Uji JWT\",\n  \"jenis_kelamin\": \"P\",\n  \"alamat\": \"Alamat pengujian\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": 2025,\n  \"status\": \"aktif\",\n  \"foto\": null\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa" }
+      }
+    },
+    {
+      "name": "POST - Tanpa token (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Mahasiswa Uji JWT\",\n  \"jenis_kelamin\": \"P\",\n  \"alamat\": \"Alamat pengujian\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": 2025,\n  \"status\": \"aktif\",\n  \"foto\": null\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa" }
+      }
+    },
+    {
+      "name": "POST - Token diubah (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}x" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Mahasiswa Uji JWT\",\n  \"jenis_kelamin\": \"P\",\n  \"alamat\": \"Alamat pengujian\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": 2025,\n  \"status\": \"aktif\",\n  \"foto\": null\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa" }
+      }
+    },
+    {
+      "name": "PUT - Tanpa token (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nama\": \"Uji tanpa token\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    },
+    {
+      "name": "PUT - Token diubah (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}x" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nama\": \"Uji token diubah\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    },
+    {
+      "name": "PUT - Ubah Semua Field (Bearer Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nim\": \"{{test_nim}}\",\n  \"nama\": \"Mahasiswa Uji JWT Diperbarui\",\n  \"jenis_kelamin\": \"L\",\n  \"alamat\": \"Alamat diperbarui\",\n  \"email\": \"{{test_email}}\",\n  \"id_prodi\": {{id_prodi}},\n  \"angkatan\": 2024,\n  \"status\": \"cuti\",\n  \"foto\": \"uji-jwt.jpg\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    },
+    {
+      "name": "DELETE - Tanpa token (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    },
+    {
+      "name": "DELETE - Token diubah (401)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 401', function () { pm.response.to.have.status(401); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}x" }
+        ],
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    },
+    {
+      "name": "DELETE - Hapus Mahasiswa Uji (Bearer Token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{auth_token}}" }
+        ],
+        "url": { "raw": "{{base_url}}?url=mahasiswa/{{test_nim}}" }
+      }
+    }
+  ]
+}

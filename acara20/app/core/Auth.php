@@ -47,7 +47,7 @@ class Auth {
         $payloadData = self::base64urlDecode($payload);
         if ($payloadData === false) return false;
         $data = json_decode($payloadData, true);
-        if (!is_array($data) || !isset($data['exp']) || !is_numeric($data['exp']) || $data['exp'] < time()) {
+        if (!is_array($data) || !isset($data['exp']) || !is_numeric($data['exp']) || $data['exp'] <= time()) {
             return false;
         }
 
@@ -59,7 +59,17 @@ class Auth {
         if (!is_array($headers)) {
             $headers = [];
         }
-        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+
+        $authHeader = $_SERVER['HTTP_AUTHORIZATION']
+            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
+            ?? '';
+        foreach ($headers as $name => $value) {
+            if (strcasecmp((string) $name, 'Authorization') === 0) {
+                $authHeader = $value;
+                break;
+            }
+        }
+
         if (!is_string($authHeader) || !preg_match('/^Bearer\s+(\S+)$/i', $authHeader, $m)) {
             Response::json(401, false, 'Token tidak ditemukan');
         }

@@ -3,18 +3,14 @@
 class Router {
     private array $map = [
         'mahasiswa' => 'MahasiswaController',
-        'register'  => 'AuthController',
-        'login'     => 'AuthController',
+        'register' => 'AuthController',
+        'login' => 'AuthController',
     ];
 
     public function dispatch(): void {
-        $url = $_GET['url'] ?? 'mahasiswa';
-        $url = rtrim($url, '/');
-        if ($url === '') {
-            $url = 'mahasiswa';
-        }
-        $urlSegments = explode('/', $url);
-        $resource = $urlSegments[0] ?? '';
+        $url = trim($_GET['url'] ?? 'mahasiswa', '/');
+        $segments = $url === '' ? [] : explode('/', $url);
+        $resource = $segments[0] ?? 'mahasiswa';
 
         if (!array_key_exists($resource, $this->map)) {
             Response::json(404, false, 'Endpoint tidak ditemukan');
@@ -23,46 +19,32 @@ class Router {
         $controllerName = $this->map[$resource];
         $controller = new $controllerName();
 
-        // Penanganan endpoint login
-        if ($resource === 'login') {
+        if (in_array($resource, ['login', 'register'], true)) {
             if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
                 Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
             }
-            $controller->login();
+
+            $action = $resource;
+            $controller->$action();
             return;
         }
 
-        // Penanganan endpoint register
-        if ($resource === 'register') {
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
-            }
-            $controller->register();
-            return;
-        }
-
-        // Penanganan endpoint CRUD (Mahasiswa)
-        $method = $_SERVER['REQUEST_METHOD'];
-        $id = $urlSegments[1] ?? null;
-
-        switch ($method) {
+        $nim = $segments[1] ?? ($_GET['nim'] ?? ($_GET['id'] ?? null));
+        switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET':
-                $controller->index();
+                $controller->index($nim);
                 break;
             case 'POST':
                 $controller->store();
                 break;
             case 'PUT':
-                if (!$id) Response::json(400, false, 'ID required for UPDATE');
-                $controller->update((int)$id);
+                $controller->update($nim);
                 break;
             case 'DELETE':
-                if (!$id) Response::json(400, false, 'ID required for DELETE');
-                $controller->destroy((int)$id);
+                $controller->destroy($nim);
                 break;
             default:
-                Response::json(405, false, 'HTTP Method tidak diizinkan');
-                break;
+                Response::json(405, false, 'HTTP Method tidak diizinkan untuk endpoint ini');
         }
     }
 }

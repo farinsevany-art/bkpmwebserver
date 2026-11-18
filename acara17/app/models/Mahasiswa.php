@@ -11,16 +11,16 @@ class Mahasiswa {
         return $this->db->query('SELECT * FROM mahasiswa ORDER BY nim DESC')->fetchAll();
     }
 
-    public function find(int $id) {
-        $stmt = $this->db->prepare('SELECT * FROM mahasiswa WHERE id = :id');
-        $stmt->execute([':id' => $id]);
+    public function find(string $nim) {
+        $stmt = $this->db->prepare('SELECT * FROM mahasiswa WHERE nim = :nim');
+        $stmt->execute([':nim' => $nim]);
         return $stmt->fetch();
     }
 
-    public function isNimExists(string $nim, ?int $ignoreId = null): bool {
-        if ($ignoreId) {
-            $stmt = $this->db->prepare('SELECT COUNT(*) FROM mahasiswa WHERE nim = :nim AND id != :id');
-            $stmt->execute([':nim' => $nim, ':id' => $ignoreId]);
+    public function isNimExists(string $nim, ?string $ignoreNim = null): bool {
+        if ($ignoreNim !== null) {
+            $stmt = $this->db->prepare('SELECT COUNT(*) FROM mahasiswa WHERE nim = :nim AND nim != :ignore_nim');
+            $stmt->execute([':nim' => $nim, ':ignore_nim' => $ignoreNim]);
         } else {
             $stmt = $this->db->prepare('SELECT COUNT(*) FROM mahasiswa WHERE nim = :nim');
             $stmt->execute([':nim' => $nim]);
@@ -28,33 +28,71 @@ class Mahasiswa {
         return $stmt->fetchColumn() > 0;
     }
 
-    public function create(array $data): string {
-        $stmt = $this->db->prepare(
-            'INSERT INTO mahasiswa (nim, nama, prodi) VALUES (:nim, :nama, :prodi)'
-        );
-        $stmt->execute([
-            ':nim' => $data['nim'], 
-            ':nama' => $data['nama'], 
-            ':prodi' => $data['prodi']
-        ]);
-        return $this->db->lastInsertId();
+    public function isEmailExists(string $email, ?string $ignoreNim = null): bool {
+        $sql = 'SELECT COUNT(*) FROM mahasiswa WHERE email = :email';
+        $params = [':email' => $email];
+
+        if ($ignoreNim !== null) {
+            $sql .= ' AND nim != :ignore_nim';
+            $params[':ignore_nim'] = $ignoreNim;
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchColumn() > 0;
     }
 
-    public function update(int $id, array $data): void {
+    public function isProdiExists(int $idProdi): bool {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM prodi WHERE id_prodi = :id_prodi');
+        $stmt->execute([':id_prodi' => $idProdi]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    public function create(array $data): bool {
         $stmt = $this->db->prepare(
-            'UPDATE mahasiswa SET nim = :nim, nama = :nama, prodi = :prodi WHERE id = :id'
+            'INSERT INTO mahasiswa
+                (nim, nama, jenis_kelamin, alamat, email, id_prodi, angkatan, status, foto)
+             VALUES
+                (:nim, :nama, :jenis_kelamin, :alamat, :email, :id_prodi, :angkatan, :status, :foto)'
         );
-        $stmt->execute([
-            ':nim' => $data['nim'], 
-            ':nama' => $data['nama'], 
-            ':prodi' => $data['prodi'], 
-            ':id' => $id
+        return $stmt->execute([
+            ':nim' => $data['nim'],
+            ':nama' => $data['nama'],
+            ':jenis_kelamin' => $data['jenis_kelamin'],
+            ':alamat' => $data['alamat'],
+            ':email' => $data['email'],
+            ':id_prodi' => $data['id_prodi'],
+            ':angkatan' => $data['angkatan'],
+            ':status' => $data['status'],
+            ':foto' => $data['foto']
         ]);
     }
 
-    public function delete(int $id): void {
-        $stmt = $this->db->prepare('DELETE FROM mahasiswa WHERE id = :id');
-        $stmt->execute([':id' => $id]);
+    public function update(string $oldNim, array $data): bool {
+        $stmt = $this->db->prepare(
+            'UPDATE mahasiswa
+             SET nim = :nim, nama = :nama, jenis_kelamin = :jenis_kelamin,
+                 alamat = :alamat, email = :email, id_prodi = :id_prodi,
+                 angkatan = :angkatan, status = :status, foto = :foto
+             WHERE nim = :old_nim'
+        );
+        return $stmt->execute([
+            ':old_nim' => $oldNim,
+            ':nim' => $data['nim'],
+            ':nama' => $data['nama'],
+            ':jenis_kelamin' => $data['jenis_kelamin'],
+            ':alamat' => $data['alamat'],
+            ':email' => $data['email'],
+            ':id_prodi' => $data['id_prodi'],
+            ':angkatan' => $data['angkatan'],
+            ':status' => $data['status'],
+            ':foto' => $data['foto']
+        ]);
+    }
+
+    public function delete(string $nim): void {
+        $stmt = $this->db->prepare('DELETE FROM mahasiswa WHERE nim = :nim');
+        $stmt->execute([':nim' => $nim]);
     }
 }
 ?>

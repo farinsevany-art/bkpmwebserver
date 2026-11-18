@@ -62,7 +62,7 @@ class Auth {
             !is_array($payloadData)
             || !isset($payloadData['exp'])
             || !is_numeric($payloadData['exp'])
-            || $payloadData['exp'] < time()
+            || $payloadData['exp'] <= time()
         ) {
             return false;
         }
@@ -76,10 +76,15 @@ class Auth {
             $headers = [];
         }
 
-        $authorization = $headers['Authorization']
-            ?? $headers['authorization']
-            ?? $_SERVER['HTTP_AUTHORIZATION']
+        $authorization = $_SERVER['HTTP_AUTHORIZATION']
+            ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION']
             ?? '';
+        foreach ($headers as $name => $value) {
+            if (strcasecmp((string) $name, 'Authorization') === 0) {
+                $authorization = $value;
+                break;
+            }
+        }
 
         if (!is_string($authorization) || !preg_match('/^Bearer\s+(\S+)$/i', $authorization, $matches)) {
             Response::json(401, false, 'Token tidak ditemukan');

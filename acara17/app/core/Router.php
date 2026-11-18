@@ -7,10 +7,19 @@ class Router {
 
     public function dispatch(): void {
         $uri = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        $segments = explode('/', $uri);
-        $resource = end($segments) ?: 'mahasiswa';
+        $segments = array_values(array_filter(explode('/', $uri), 'strlen'));
+        $resourceIndex = null;
+
+        foreach ($segments as $index => $segment) {
+            if (isset($this->map[$segment])) {
+                $resourceIndex = $index;
+                break;
+            }
+        }
+
+        $resource = $resourceIndex === null ? null : $segments[$resourceIndex];
         
-        $controllerName = $this->map[$resource] ?? null;
+        $controllerName = $resource !== null ? $this->map[$resource] : null;
         if (!$controllerName) {
             http_response_code(404);
             header('Content-Type: application/json');
@@ -19,18 +28,20 @@ class Router {
         }
 
         $controller = new $controllerName();
+        $nim = $_GET['nim'] ?? $_GET['id'] ?? ($segments[$resourceIndex + 1] ?? null);
+
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'GET': 
-                $controller->index(); 
+                $controller->index($nim);
                 break;
             case 'POST': 
                 $controller->store(); 
                 break;
             case 'PUT': 
-                $controller->update($_GET['id'] ?? null); 
+                $controller->update($nim);
                 break;
             case 'DELETE': 
-                $controller->destroy($_GET['id'] ?? null); 
+                $controller->destroy($nim);
                 break;
             default:
                 http_response_code(405);

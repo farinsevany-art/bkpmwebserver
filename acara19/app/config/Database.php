@@ -1,6 +1,9 @@
 <?php
 
-define('APP_ENV', 'development');
+if (!defined('APP_ENV')) {
+    $environment = getenv('APP_ENV');
+    define('APP_ENV', $environment === false ? 'development' : $environment);
+}
 
 class Database {
     private static $host = 'localhost';
