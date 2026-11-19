@@ -117,7 +117,9 @@
             margin-top: 0.8rem;
         }
 
-        dialog input {
+        dialog input,
+        dialog select,
+        dialog textarea {
             box-sizing: border-box;
             width: 100%;
             margin-top: 0.3rem;
@@ -133,7 +135,7 @@
             padding: 0;
         }
     </style>
-    <script src="dashboard.js" defer></script>
+    <script src="dashboard.js?v=2" defer></script>
 </head>
 <body>
     <main>
@@ -169,16 +171,41 @@
         <dialog id="dialog-mahasiswa">
             <form id="form-mahasiswa">
                 <h2 id="judul-form">Tambah Mahasiswa</h2>
-                <input id="mahasiswa-id" name="id" type="hidden">
+                <input id="mahasiswa-nim-lama" name="nim_lama" type="hidden">
 
                 <label for="nim">NIM</label>
-                <input id="nim" name="nim" minlength="9" maxlength="9" required>
+                <input id="nim" name="nim" minlength="9" maxlength="20" required>
 
                 <label for="nama">Nama</label>
                 <input id="nama" name="nama" required>
 
+                <label for="jenis_kelamin">Jenis Kelamin</label>
+                <select id="jenis_kelamin" name="jenis_kelamin" required>
+                    <option value="L" selected>Laki-laki</option>
+                    <option value="P">Perempuan</option>
+                </select>
+
+                <label for="alamat">Alamat</label>
+                <textarea id="alamat" name="alamat"></textarea>
+
+                <label for="email">Email</label>
+                <input id="email" name="email" type="email">
+
                 <label for="prodi">Program Studi</label>
-                <input id="prodi" name="prodi" required>
+                <input id="prodi" name="prodi" type="number" min="1" step="1" required>
+
+                <label for="angkatan">Angkatan</label>
+                <input id="angkatan" name="angkatan" type="number" min="2000" required>
+
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    <option value="aktif" selected>Aktif</option>
+                    <option value="cuti">Cuti</option>
+                    <option value="lulus">Lulus</option>
+                </select>
+
+                <label for="foto">Foto (path)</label>
+                <input id="foto" name="foto" maxlength="255">
 
                 <menu>
                     <button id="btn-batal" type="button">Batal</button>

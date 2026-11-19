@@ -42,16 +42,15 @@ class Router {
         }
 
         $method = $_SERVER['REQUEST_METHOD'];
+        $nim = $urlSegments[1] ?? ($_GET['nim'] ?? null);
         if ($method === 'GET') {
-            $controller->index();
+            $controller->index($nim);
         } elseif ($method === 'POST') {
             $controller->store();
         } elseif ($method === 'PUT') {
-            $id = $urlSegments[1] ?? null;
-            $controller->update($id);
+            $controller->update($nim);
         } elseif ($method === 'DELETE') {
-            $id = $urlSegments[1] ?? null;
-            $controller->destroy($id);
+            $controller->destroy($nim);
         }
     }
 }

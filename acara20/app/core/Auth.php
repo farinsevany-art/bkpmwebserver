@@ -20,12 +20,12 @@ class Auth {
 
     /**
      * Membuat token JWT dengan payload pengguna.
-     * Tugas Mandiri 2: Masa berlaku token diubah menjadi 5 menit (300 detik).
+     * Masa berlaku token adalah 20 menit (1.200 detik).
      */
     public static function generateToken(array $payload): string {
         $header = self::base64url(json_encode(['alg' => 'HS256', 'typ' => 'JWT']));
-        // Expired time: 5 menit (300 detik) dari waktu sekarang
-        $payload['exp'] = time() + 300; 
+        // Expired time: 20 menit (1.200 detik) dari waktu sekarang
+        $payload['exp'] = time() + 1200;
         $payloadEnc = self::base64url(json_encode($payload));
         $signature = self::base64url(hash_hmac('sha256', "$header.$payloadEnc", self::SECRET, true));
         return "$header.$payloadEnc.$signature";

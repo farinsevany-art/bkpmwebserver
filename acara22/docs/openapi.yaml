@@ -1,25 +1,23 @@
 openapi: 3.0.3
 info:
-  title: API Sistem Informasi Akademik
-  description: |
-    Dokumentasi OpenAPI untuk endpoint autentikasi dan data mahasiswa.
-    API diimplementasikan pada project Acara 21; server lokal memakai rewrite
-    pada folder public agar path resource diteruskan ke Router.
+  title: API Sistem Informasi Akademik (MVC)
+  description: Dokumentasi OpenAPI untuk API Acara 21.
   version: 1.0.0
 servers:
   - url: http://localhost/minngu1/acara21/public
-    description: Server Laragon lokal (project Acara 21)
+    description: Server Laragon lokal; URL resource diteruskan ke Router oleh .htaccess
 tags:
   - name: Authentication
     description: Registrasi dan login pengguna
   - name: Mahasiswa
     description: Pengelolaan data mahasiswa
+
 paths:
   /register:
     post:
       tags:
         - Authentication
-      summary: Mendaftarkan pengguna baru
+      summary: Mendaftarkan pengguna baru (AuthController::register)
       operationId: registerUser
       requestBody:
         required: true
@@ -28,9 +26,9 @@ paths:
             schema:
               $ref: '#/components/schemas/RegisterRequest'
             example:
-              username: mahasiswa1
-              email: mahasiswa1@example.com
-              password: rahasia123
+              username: mahasiswa_uji
+              email: mahasiswa_uji@example.com
+              password: contoh-password
       responses:
         '201':
           description: Registrasi berhasil
@@ -44,9 +42,19 @@ paths:
                 data:
                   id: '1'
                 errors: []
-                timestamp: '2026-11-14T20:00:00+07:00'
+                timestamp: '2026-11-18T20:00:00+07:00'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Field wajib kosong atau username/email sudah digunakan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: false
+                message: Username, email, dan password wajib diisi
+                data: null
+                errors: []
+                timestamp: '2026-11-18T20:00:00+07:00'
         '422':
           description: Format email tidak valid
           content:
@@ -58,13 +66,13 @@ paths:
                 message: Format email tidak valid
                 data: null
                 errors: []
-                timestamp: '2026-11-14T20:00:00+07:00'
+                timestamp: '2026-11-18T20:00:00+07:00'
 
   /login:
     post:
       tags:
         - Authentication
-      summary: Login dan memperoleh JWT
+      summary: Autentikasi pengguna (AuthController::login)
       operationId: loginUser
       requestBody:
         required: true
@@ -73,11 +81,11 @@ paths:
             schema:
               $ref: '#/components/schemas/LoginRequest'
             example:
-              username: mahasiswa1
-              password: rahasia123
+              username: mahasiswa_uji
+              password: contoh-password
       responses:
         '200':
-          description: Login berhasil dan JWT diterbitkan
+          description: Login berhasil; token JWT berlaku selama lima menit
           content:
             application/json:
               schema:
@@ -89,9 +97,19 @@ paths:
                   token: <jwt-token>
                   role: user
                 errors: []
-                timestamp: '2026-11-14T20:05:00+07:00'
+                timestamp: '2026-11-18T20:05:00+07:00'
         '400':
-          $ref: '#/components/responses/BadRequest'
+          description: Username atau password wajib diisi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                success: false
+                message: Username dan password wajib diisi
+                data: null
+                errors: []
+                timestamp: '2026-11-18T20:05:00+07:00'
         '401':
           description: Username atau password salah
           content:
@@ -103,22 +121,24 @@ paths:
                 message: Username atau password salah
                 data: null
                 errors: []
-                timestamp: '2026-11-14T20:05:00+07:00'
+                timestamp: '2026-11-18T20:05:00+07:00'
 
   /mahasiswa:
     get:
       tags:
         - Mahasiswa
-      summary: Mengambil semua data atau satu mahasiswa
+      summary: Mengambil data mahasiswa (MahasiswaController::index)
       operationId: getMahasiswa
       parameters:
-        - name: id
+        - name: nim
           in: query
           required: false
-          description: Isi untuk mengambil satu mahasiswa berdasarkan ID.
+          description: Isi untuk mengambil satu mahasiswa; tanpa NIM, API mengembalikan seluruh data.
           schema:
-            type: integer
-            minimum: 1
+            type: string
+            minLength: 9
+            maxLength: 9
+          example: E41230002
       responses:
         '200':
           description: Data mahasiswa berhasil diambil
@@ -133,31 +153,41 @@ paths:
                     success: true
                     message: Data berhasil diambil
                     data:
-                      - id: '1'
-                        nim: E41230001
-                        nama: Ahmad Fauzi
-                        prodi: Teknik Informatika
+                      - nim: E41230002
+                        nama: Siti Aminah
+                        jenis_kelamin: P
+                        alamat: Jl. Contoh
+                        email: siti@example.com
+                        id_prodi: '1'
+                        angkatan: '2024'
+                        status: aktif
+                        foto: null
                     errors: []
-                    timestamp: '2026-11-14T20:10:00+07:00'
+                    timestamp: '2026-11-18T20:10:00+07:00'
                 single:
-                  summary: Satu mahasiswa
+                  summary: Satu mahasiswa ditemukan
                   value:
                     success: true
                     message: Data berhasil diambil
                     data:
-                      id: '1'
-                      nim: E41230001
-                      nama: Ahmad Fauzi
-                      prodi: Teknik Informatika
+                      nim: E41230002
+                      nama: Siti Aminah
+                      jenis_kelamin: P
+                      alamat: Jl. Contoh
+                      email: siti@example.com
+                      id_prodi: '1'
+                      angkatan: '2024'
+                      status: aktif
+                      foto: null
                     errors: []
-                    timestamp: '2026-11-14T20:10:00+07:00'
+                    timestamp: '2026-11-18T20:10:00+07:00'
         '404':
-          $ref: '#/components/responses/NotFound'
+          $ref: '#/components/responses/StudentNotFound'
 
     post:
       tags:
         - Mahasiswa
-      summary: Menambahkan data mahasiswa
+      summary: Menambahkan data mahasiswa (MahasiswaController::store)
       operationId: createMahasiswa
       security:
         - bearerAuth: []
@@ -166,11 +196,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MahasiswaRequest'
+              $ref: '#/components/schemas/MahasiswaCreateRequest'
             example:
               nim: E41230002
               nama: Siti Aminah
-              prodi: Teknik Informatika
+              jenis_kelamin: P
+              alamat: Jl. Contoh
+              email: siti@example.com
+              id_prodi: 1
+              angkatan: '2024'
+              status: aktif
+              foto: null
       responses:
         '201':
           description: Data mahasiswa berhasil ditambahkan
@@ -182,55 +218,90 @@ paths:
                 success: true
                 message: Data berhasil ditambahkan
                 data:
-                  id: '2'
+                  nim: E41230002
+                  nama: Siti Aminah
+                  jenis_kelamin: P
+                  alamat: Jl. Contoh
+                  email: siti@example.com
+                  id_prodi: 1
+                  angkatan: 2024
+                  status: aktif
+                  foto: null
                 errors: []
-                timestamp: '2026-11-14T20:12:00+07:00'
+                timestamp: '2026-11-18T20:12:00+07:00'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '422':
-          description: Panjang NIM tidak valid.
+          $ref: '#/components/responses/InvalidMahasiswa'
+
+  /mahasiswa/{nim}:
+    parameters:
+      - name: nim
+        in: path
+        required: true
+        description: NIM mahasiswa dengan panjang 9 karakter.
+        schema:
+          type: string
+          minLength: 9
+          maxLength: 9
+        example: E41230002
+
+    get:
+      tags:
+        - Mahasiswa
+      summary: Mengambil satu mahasiswa berdasarkan NIM (MahasiswaController::index)
+      operationId: getMahasiswaByNim
+      responses:
+        '200':
+          description: Data mahasiswa ditemukan
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                success: false
-                message: Format NIM tidak valid, harus 9 karakter
-                data: null
-                errors:
-                  nim:
-                    - Format NIM tidak valid, harus 9 karakter.
-                timestamp: '2026-11-14T20:12:00+07:00'
-
-  /mahasiswa/{id}:
-    parameters:
-      - name: id
-        in: path
-        required: true
-        description: ID mahasiswa.
-        schema:
-          type: integer
-          minimum: 1
+                success: true
+                message: Data berhasil diambil
+                data:
+                  nim: E41230002
+                  nama: Siti Aminah
+                  jenis_kelamin: P
+                  alamat: Jl. Contoh
+                  email: siti@example.com
+                  id_prodi: '1'
+                  angkatan: '2024'
+                  status: aktif
+                  foto: null
+                errors: []
+                timestamp: '2026-11-18T20:10:00+07:00'
+        '404':
+          $ref: '#/components/responses/StudentNotFound'
 
     put:
       tags:
         - Mahasiswa
-      summary: Memperbarui data mahasiswa
+      summary: Memperbarui data mahasiswa (MahasiswaController::update)
       operationId: updateMahasiswa
       security:
         - bearerAuth: []
       requestBody:
         required: true
+        description: Kirim field yang akan diubah; semua field boleh dikirim sekaligus.
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MahasiswaRequest'
+              $ref: '#/components/schemas/MahasiswaUpdateRequest'
             example:
-              nim: E41230001
-              nama: Ahmad Fauzi Updated
-              prodi: Teknik Informatika
+              nim: E41230002
+              nama: Siti Aminah Updated
+              jenis_kelamin: P
+              alamat: Jl. Contoh Baru
+              email: siti.updated@example.com
+              id_prodi: 1
+              angkatan: '2024'
+              status: aktif
+              foto: null
       responses:
         '200':
           description: Data mahasiswa berhasil diperbarui
@@ -241,20 +312,31 @@ paths:
               example:
                 success: true
                 message: Data berhasil diperbarui
-                data: null
+                data:
+                  nim: E41230002
+                  nama: Siti Aminah Updated
+                  jenis_kelamin: P
+                  alamat: Jl. Contoh Baru
+                  email: siti.updated@example.com
+                  id_prodi: 1
+                  angkatan: 2024
+                  status: aktif
+                  foto: null
                 errors: []
-                timestamp: '2026-11-14T20:15:00+07:00'
+                timestamp: '2026-11-18T20:15:00+07:00'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/InvalidMahasiswa'
 
     delete:
       tags:
         - Mahasiswa
-      summary: Menghapus data mahasiswa
+      summary: Menghapus data mahasiswa (MahasiswaController::destroy)
       operationId: deleteMahasiswa
       security:
         - bearerAuth: []
@@ -270,7 +352,7 @@ paths:
                 message: Data berhasil dihapus
                 data: null
                 errors: []
-                timestamp: '2026-11-14T20:17:00+07:00'
+                timestamp: '2026-11-18T20:17:00+07:00'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -300,9 +382,9 @@ components:
         message:
           type: string
         data:
-          description: Data response, dapat berupa objek, daftar, atau null.
+          description: Data response berupa objek, array, atau null.
         errors:
-          description: Daftar error atau detail validasi per field.
+          description: Daftar error umum atau detail validasi per field.
           oneOf:
             - type: array
               items:
@@ -325,15 +407,15 @@ components:
       properties:
         username:
           type: string
-          example: mahasiswa1
+          example: mahasiswa_uji
         email:
           type: string
           format: email
-          example: mahasiswa1@example.com
+          example: mahasiswa_uji@example.com
         password:
           type: string
           format: password
-          example: rahasia123
+          example: contoh-password
 
     LoginRequest:
       type: object
@@ -343,18 +425,20 @@ components:
       properties:
         username:
           type: string
-          example: mahasiswa1
+          example: mahasiswa_uji
         password:
           type: string
           format: password
-          example: rahasia123
+          example: contoh-password
 
-    MahasiswaRequest:
+    MahasiswaCreateRequest:
       type: object
       required:
         - nim
         - nama
-        - prodi
+        - email
+        - id_prodi
+        - angkatan
       properties:
         nim:
           type: string
@@ -363,26 +447,106 @@ components:
           example: E41230002
         nama:
           type: string
+          maxLength: 100
           example: Siti Aminah
-        prodi:
+        jenis_kelamin:
           type: string
-          example: Teknik Informatika
+          enum: [L, P]
+          default: L
+          example: P
+        alamat:
+          type: string
+          maxLength: 255
+          example: Jl. Contoh
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          example: siti@example.com
+        id_prodi:
+          oneOf:
+            - type: integer
+            - type: string
+              pattern: '^[0-9]+$'
+          example: 1
+        angkatan:
+          oneOf:
+            - type: integer
+            - type: string
+              pattern: '^[0-9]{4}$'
+          example: '2024'
+        status:
+          type: string
+          enum: [aktif, cuti, lulus]
+          default: aktif
+          example: aktif
+        foto:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: null
+
+    MahasiswaUpdateRequest:
+      type: object
+      minProperties: 1
+      properties:
+        nim:
+          type: string
+          minLength: 9
+          maxLength: 9
+          example: E41230002
+        nama:
+          type: string
+          maxLength: 100
+          example: Siti Aminah Updated
+        jenis_kelamin:
+          type: string
+          enum: [L, P]
+          example: P
+        alamat:
+          type: string
+          maxLength: 255
+          example: Jl. Contoh Baru
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          example: siti.updated@example.com
+        id_prodi:
+          oneOf:
+            - type: integer
+            - type: string
+              pattern: '^[0-9]+$'
+          example: 1
+        angkatan:
+          oneOf:
+            - type: integer
+            - type: string
+              pattern: '^[0-9]{4}$'
+          example: '2024'
+        status:
+          type: string
+          enum: [aktif, cuti, lulus]
+          example: aktif
+        foto:
+          type: string
+          nullable: true
+          maxLength: 255
+          example: null
 
   responses:
     BadRequest:
-      description: Request JSON, field wajib, atau ID tidak valid.
+      description: Body JSON tidak valid atau field wajib pada endpoint autentikasi kosong.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiResponse'
           example:
             success: false
-            message: Field nim, nama, dan prodi wajib diisi
+            message: Body harus berupa JSON object yang valid
             data: null
-            errors:
-              nim:
-                - Field nim wajib diisi dengan teks.
-            timestamp: '2026-11-14T20:20:00+07:00'
+            errors: []
+            timestamp: '2026-11-18T20:20:00+07:00'
     Unauthorized:
       description: Token Bearer tidak ada, tidak valid, atau kedaluwarsa.
       content:
@@ -394,16 +558,44 @@ components:
             message: Token tidak ditemukan
             data: null
             errors: []
-            timestamp: '2026-11-14T20:20:00+07:00'
-    NotFound:
-      description: Endpoint atau data mahasiswa tidak ditemukan.
+            timestamp: '2026-11-18T20:20:00+07:00'
+    InvalidMahasiswa:
+      description: Field mahasiswa tidak memenuhi validasi.
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiResponse'
           example:
             success: false
-            message: Data tidak ditemukan
+            message: Data mahasiswa tidak valid
+            data: null
+            errors:
+              nim:
+                - NIM harus berjumlah 9 karakter.
+            timestamp: '2026-11-18T20:20:00+07:00'
+    StudentNotFound:
+      description: Mahasiswa dengan NIM tersebut tidak ditemukan saat GET.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            message: Data mahasiswa tidak ditemukan
+            data: null
+            errors:
+              nim:
+                - Data mahasiswa dengan NIM tersebut tidak ditemukan.
+            timestamp: '2026-11-18T20:20:00+07:00'
+    NotFound:
+      description: Mahasiswa dengan NIM tersebut tidak ditemukan saat PUT atau DELETE.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiResponse'
+          example:
+            success: false
+            message: Data mahasiswa tidak ditemukan
             data: null
             errors: []
-            timestamp: '2026-11-14T20:20:00+07:00'
+            timestamp: '2026-11-18T20:20:00+07:00'

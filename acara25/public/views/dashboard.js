@@ -29,7 +29,17 @@ if (!token || !['admin', 'user'].includes(role)) {
     }
 
     async function readResponse(response) {
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (error) {
+            if (error instanceof SyntaxError) {
+                throw new Error(
+                    `Server mengirim response bukan JSON (HTTP ${response.status}). Periksa log PHP/server.`
+                );
+            }
+            throw error;
+        }
         if (response.status === 401) {
             throw new Error(
                 `API menolak token (401): ${result.message || 'silakan login kembali.'}`
@@ -49,26 +59,32 @@ if (!token || !['admin', 'user'].includes(role)) {
 
     function openForm(mahasiswa = null) {
         form.reset();
-        document.querySelector('#mahasiswa-id').value = mahasiswa?.id ?? '';
+        document.querySelector('#mahasiswa-nim-lama').value = mahasiswa?.nim ?? '';
         document.querySelector('#judul-form').textContent =
             mahasiswa ? 'Ubah Mahasiswa' : 'Tambah Mahasiswa';
         if (mahasiswa) {
             form.elements.nim.value = mahasiswa.nim ?? '';
             form.elements.nama.value = mahasiswa.nama ?? '';
+            form.elements.jenis_kelamin.value = mahasiswa.jenis_kelamin ?? 'L';
+            form.elements.alamat.value = mahasiswa.alamat ?? '';
+            form.elements.email.value = mahasiswa.email ?? '';
             form.elements.prodi.value = mahasiswa.prodi ?? mahasiswa.id_prodi ?? '';
+            form.elements.angkatan.value = mahasiswa.angkatan ?? '';
+            form.elements.status.value = mahasiswa.status ?? 'aktif';
+            form.elements.foto.value = mahasiswa.foto ?? '';
         }
         dialog.showModal();
     }
 
-    async function hapusMahasiswa(id) {
-        if (!id) {
-            setStatus('ID mahasiswa tidak tersedia.', true);
+    async function hapusMahasiswa(nim) {
+        if (!nim) {
+            setStatus('NIM mahasiswa tidak tersedia.', true);
             return;
         }
         if (!window.confirm('Yakin ingin menghapus data mahasiswa ini?')) return;
 
         try {
-            const response = await fetch(new URL(`mahasiswa/${encodeURIComponent(id)}`, API_BASE_URL), {
+            const response = await fetch(new URL(`mahasiswa/${encodeURIComponent(nim)}`, API_BASE_URL), {
                 method: 'DELETE',
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -121,7 +137,7 @@ if (!token || !['admin', 'user'].includes(role)) {
                     deleteButton.className = 'btn-hapus';
                     deleteButton.type = 'button';
                     deleteButton.textContent = 'Hapus';
-                    deleteButton.addEventListener('click', () => hapusMahasiswa(mahasiswa.id));
+                    deleteButton.addEventListener('click', () => hapusMahasiswa(mahasiswa.nim));
 
                     actions.append(editButton, deleteButton);
                     row.appendChild(actions);
@@ -142,14 +158,14 @@ if (!token || !['admin', 'user'].includes(role)) {
 
     form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const id = form.elements.id.value;
-        const url = id
-            ? new URL(`mahasiswa/${encodeURIComponent(id)}`, API_BASE_URL)
+        const nimLama = form.elements.nim_lama.value;
+        const url = nimLama
+            ? new URL(`mahasiswa/${encodeURIComponent(nimLama)}`, API_BASE_URL)
             : new URL('mahasiswa', API_BASE_URL);
 
         try {
             const response = await fetch(url, {
-                method: id ? 'PUT' : 'POST',
+                method: nimLama ? 'PUT' : 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
@@ -157,13 +173,19 @@ if (!token || !['admin', 'user'].includes(role)) {
                 body: JSON.stringify({
                     nim: form.elements.nim.value.trim(),
                     nama: form.elements.nama.value.trim(),
-                    prodi: form.elements.prodi.value.trim()
+                    jenis_kelamin: form.elements.jenis_kelamin.value,
+                    alamat: form.elements.alamat.value.trim() || null,
+                    email: form.elements.email.value.trim() || null,
+                    prodi: form.elements.prodi.value.trim(),
+                    angkatan: form.elements.angkatan.value.trim(),
+                    status: form.elements.status.value,
+                    foto: form.elements.foto.value.trim() || null
                 })
             });
             await readResponse(response);
             dialog.close();
             await muatDataMahasiswa();
-            setStatus(id ? 'Data mahasiswa berhasil diperbarui.' : 'Data mahasiswa berhasil ditambahkan.');
+            setStatus(nimLama ? 'Data mahasiswa berhasil diperbarui.' : 'Data mahasiswa berhasil ditambahkan.');
         } catch (error) {
             setStatus(error.message, true);
         }

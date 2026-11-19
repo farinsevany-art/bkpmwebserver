@@ -55,10 +55,10 @@ NIM dan email harus unik. Collection membuat nilai uji secara otomatis. Request 
 | TC-13 | Mengakses API dengan token bertanda tangan valid tetapi sudah kedaluwarsa | 401 | 401 | Pass |
 | TC-14 | GET mahasiswa setelah data uji dihapus | 404 | 404 | Pass |
 
-Pengujian lokal memakai akun sementara pada tabel `users` dan data mahasiswa sementara. Semua data sementara dibersihkan setelah pengujian. Masa berlaku token baru diverifikasi sebesar 300 detik; token kedaluwarsa ditolak oleh API.
+Pengujian lokal memakai akun sementara pada tabel `users` dan data mahasiswa sementara. Semua data sementara dibersihkan setelah pengujian. Masa berlaku token baru diverifikasi sebesar 1.200 detik (20 menit); token kedaluwarsa ditolak oleh API.
 
 ## Kesimpulan JWT stateless dan logout
 
 JWT stateless menyimpan klaim dan waktu kedaluwarsa di dalam token yang ditandatangani server. Server tidak menyimpan sesi atau daftar token aktif, sehingga membuang token dari sisi client hanya menghapus salinan client; token yang sudah diterbitkan tetap dapat digunakan sampai kedaluwarsa.
 
-Logout yang langsung membatalkan token memerlukan mekanisme tambahan di sisi server, misalnya blacklist berisi ID token (`jti`) sampai waktu kedaluwarsanya. Setiap request perlu memeriksa blacklist tersebut. Cara ini menambah penyimpanan dan pemeriksaan server, sehingga autentikasi tidak lagi sepenuhnya stateless. Untuk implementasi saat ini, token berlaku lima menit dan setelah itu harus ditolak; penghapusan token pada client saja bukan pencabutan token di server.
+Logout yang langsung membatalkan token memerlukan mekanisme tambahan di sisi server, misalnya blacklist berisi ID token (`jti`) sampai waktu kedaluwarsanya. Setiap request perlu memeriksa blacklist tersebut. Cara ini menambah penyimpanan dan pemeriksaan server, sehingga autentikasi tidak lagi sepenuhnya stateless. Untuk implementasi saat ini, token berlaku 20 menit dan setelah itu harus ditolak; penghapusan token pada client saja bukan pencabutan token di server.
